@@ -7,22 +7,20 @@ type DateFormProps = {
   className?: string,
   title?: string,
   label?: string,
-  size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl",
+  size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
   disabled?: boolean,
   defaultValue?: string,
-  errorMessage?: string,
   validate?: (value: string) => boolean,
   onChange?: (value: string, valid: boolean, title: string) => void,
 }
 
-export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(function TextForm({
+export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(function DateForm2({
   className = "",
   title = "",
   label = "",
   size = "auto",
   disabled = false,
   defaultValue = new Date().toISOString().slice(0,10),
-  errorMessage = "",
   validate = undefined,
   onChange = undefined,
 }, ref) {
@@ -52,6 +50,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
       (size === "md") && "max-w-md w-full mx-auto",
       (size === "lg") && "max-w-lg w-full mx-auto",
       (size === "xl") && "max-w-xl w-full mx-auto",
+      (size === "full") && "w-full px-2",
       className,
     ) }>
       {
@@ -75,12 +74,6 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
         defaultValue={ valid ? defaultValue : "" }
         onChange={ handleChange }
       />
-      {
-        (!disabled && validate && !valid && errorMessage) &&
-        <p className="mt-1 px-2 text-sm text-red-600">
-          { errorMessage }
-        </p>
-      }
     </div>
   )
 }))

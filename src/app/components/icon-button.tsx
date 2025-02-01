@@ -17,7 +17,7 @@ export default React.memo<IconButtonProps>(function IconButton({
   className = "",
   title = "",
   icon = "edit",
-  color = "dark",
+  color = "light",
   disabled = false,
   open = undefined,
   close = undefined,

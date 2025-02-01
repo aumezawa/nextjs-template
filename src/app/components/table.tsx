@@ -12,8 +12,10 @@ type TableProps = {
   data?: TableFormat,
   checkable?: boolean,
   commandable?: boolean,
+  filter?: (key: string, value: string) => boolean,
+  remind?: (ket: string, value: string) => "none" | "info" | "warning" | "error",
   onChecked?: (value: Array<string>) => void,
-  onCommand?: (value: string) => void,
+  onCommand?: (title: string) => void,
 }
 
 export default React.memo<TableProps>(function Table({
@@ -21,6 +23,8 @@ export default React.memo<TableProps>(function Table({
   data = { title: "untitled", labels: ["unlabeled"], contents: [{ unlabeled: "no data" }] },
   checkable = false,
   commandable = false,
+  filter = (_key: string, _value: string) => true,
+  remind = (_key: string, _value: string) => "none",
   onChecked = undefined,
   onCommand = undefined,
 }){
@@ -74,19 +78,22 @@ export default React.memo<TableProps>(function Table({
 
   return (
     <div className={ cn(
-      "relative overflow-x-auto overflow-y-auto shadow-md",
+      "w-full h-full overflow-x-auto overflow-y-auto",
       className,
     ) }
     >
-      <table className="text-sm text-left text-gray-500">
-        <thead className="sticky top-0 text-xs uppercase text-gray-700 bg-gray-50">
+      <table className="w-full text-sm text-left text-gray-600">
+        <thead className="sticky top-0 z-10 text-xs uppercase text-nowrap text-gray-800 bg-gray-100">
           <tr>
             {
               checkable &&
-              <th scope="col" className="p-4">
-                <div className="flex items-center">
-                  <Chackbox ref={ refs.current.head } title="header" onChange={ handleChecked }/>
-                </div>
+              <th scope="col" className="sticky left-0 z-0 px-3 py-3 bg-gray-100">
+                <Chackbox
+                  ref={ refs.current.head }
+                  className="m-0"
+                  title="header"
+                  onChange={ handleChecked }
+                />
               </th>
             }
             {
@@ -98,13 +105,14 @@ export default React.memo<TableProps>(function Table({
             }
             {
               commandable &&
-              <th scope="col" className="px-6 py-3">
+              <th scope="col" className="sticky right-0 z-0 px-6 py-3 bg-gray-100">
               </th>
             }
           </tr>
         </thead>
         {
           data.contents.map((content: TableContent, row: number) => {
+            // recreating refs
             if (row > refs.current.body.length - 1) {
               refs.current.body.push(React.createRef<HTMLInputElement>())
             }
@@ -112,33 +120,72 @@ export default React.memo<TableProps>(function Table({
               refs.current.body = refs.current.body.slice(0, refs.current.body.length)
             }
 
+            // filter
+            if (
+              !data.labels
+              .map((label: string) => (filter(label, content[label] || "")))
+              .reduce((acc: boolean, cur: boolean) => (acc || cur))
+            ) {
+              return (
+                <tbody key={ row }>
+                </tbody>
+              )
+            }
+
+            // remind
+            const type = data.labels
+              .map((label: string) => (remind(label, content[label] || "none")))
+              .reduce((acc: string, cur: string) => {
+                if (acc === "error" || cur === "error") {
+                  return "error"
+                } else if (acc === "warning" || cur === "warning") {
+                  return "warning"
+                } else if (acc === "info" || cur === "info") {
+                  return "info"
+                } else {
+                  return "none"
+                }
+              })
+
             return (
               <tbody key={ row }>
                 <tr className={ cn(
-                  "bg-white border-b hover:bg-blue-100",
-                  (checked.includes(String(row))) && "bg-green-100 hover:bg-green-200",
+                  "text-nowrap bg-white hover:bg-gray-100 border-b",
+                  (type === "none" && (checked.includes(String(row)))) && "bg-blue-100 hover:bg-blue-200",
+                  (type === "info") && "bg-green-100 hover:bg-green-200",
+                  (type === "info" && (checked.includes(String(row)))) && "bg-green-200 hover:bg-green-300",
+                  (type === "warning") && "bg-yellow-100 hover:bg-yellow-200",
+                  (type === "warning" && (checked.includes(String(row)))) && "bg-yellow-200 hover:bg-yellow-300",
+                  (type === "error") && "bg-red-100 hover:bg-red-200",
+                  (type === "error" && (checked.includes(String(row)))) && "bg-red-200 hover:bg-red-300",
                 ) }>
                   {
                     checkable &&
-                    <td className="w-4 p-4">
-                      <div className="flex items-center">
-                        <Chackbox ref={ refs.current.body[row] } title={ String(row) } onChange={ handleChecked }/>
-                      </div>
+                    <td className="sticky left-0 z-0 px-3 py-3">
+                      <Chackbox
+                        ref={ refs.current.body[row] }
+                        className="m-0"
+                        title={ String(row) }
+                        onChange={ handleChecked }
+                      />
                     </td>
                   }
                   {
                     data.labels.map((label: string, col: number) => (
-                      <td key={ col } scope="col" className="px-6 py-4">
+                      <td key={ col } scope="col" className="px-6 py-3">
                         { content[label] }
                       </td>
                     ))
                   }
                   {
                     commandable &&
-                    <td className="w-2 p-2">
-                      <div className="flex items-center">
-                        <IconButtun className="m-2 p-2" title={ String(row) } icon="edit" onClick={ handleCommand }/>
-                      </div>
+                    <td className="sticky right-0 z-0 px-2 py-2">
+                      <IconButtun
+                        className="m-0 p-1"
+                        title={ String(row) }
+                        icon="edit"
+                        onClick={ handleCommand }
+                      />
                     </td>
                   }
                 </tr>

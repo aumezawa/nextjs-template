@@ -20,7 +20,7 @@ export default React.memo<MessageBoxProps>(function MessageBox({
       "m-0 p-2",
     ) }>
       <div className={ cn(
-        "p-4 font-medium border border-gray-200 rounded-lg",
+        "px-4 py-3 font-medium border border-gray-200 rounded-lg",
         (type === "info") && "text-green-800 bg-green-200",
         (type === "warning") && "text-yellow-800 bg-yellow-200",
         (type === "error") && "text-red-800 bg-red-200",

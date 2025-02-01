@@ -4,6 +4,7 @@ import { cn } from "@/app/libs/utils"
 
 
 type SelectFormProps = {
+  id: string,
   options?: string[],
   className?: string,
   title?: string,
@@ -16,11 +17,12 @@ type SelectFormProps = {
   validate?: (value: number) => boolean,
 }
 
-export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(function SelectForm({
+export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(function SelectForm2({
+  id = undefined,
   options = [],
   className = "",
   title = "",
-  label = "",
+  label = "no label",
   size = "auto",
   disabled = false,
   placeholder = "Choose an option",
@@ -57,35 +59,45 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
       (size === "full") && "w-full px-2",
       className,
     ) }>
-      {
-        label &&
-        <p className="mb-1 text-sm font-medium text-gray-900">
-          { label }
-        </p>
-      }
-      <select
-        ref={ ref }
-        className={ cn (
-          "w-full p-2.5 text-sm rounded-lg rounded-2 border",
-          (valid) && "text-green-900 bg-green-50 border-green-700",
-          (!valid) && "text-red-900 bg-red-50 border-red-700",
-          (disabled) && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
-        ) }
-        disabled={ disabled }
-        defaultValue={ defaultValue }
-        onChange={ handleChange }
-      >
-        <option value="-1">
-          { placeholder }
-        </option>
-        {
-          options.map((option: string, index: number) => (
-            <option key={ index } value={ String(index) }>
-              { option }
+      <div className="flex flex-row">
+        <div className="relative w-full z-0 mt-3 group">
+          <select
+            ref={ ref }
+            id={ id }
+            className={ cn (
+              "block w-full py-2.5 px-0 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
+              (valid) && "text-green-700 border-green-500 focus:border-green-500",
+              (!valid) && "text-red-700 border-red-500 focus:border-red-500",
+              (disabled) && "text-gray-600 border-gray-400 cursor-not-allowed",
+            ) }
+            disabled={ disabled }
+            defaultValue={ defaultValue }
+            onChange={ handleChange }
+          >
+            <option value="-1">
+              { placeholder }
             </option>
-          ))
-        }
-      </select>
+            {
+              options.map((option: string, index: number) => (
+              <option key={ index } value={ String(index) }>
+                { option }
+              </option>
+            ))
+            }
+          </select>
+          <label
+            htmlFor={ id }
+            className={ cn(
+              "absolute top-3 -z-10 scale-75 text-sm -translate-y-6 origin-[0]",
+              (valid) && "text-green-500 peer-focus:text-green-700",
+              (!valid) && "text-red-500 peer-focus:text-red-700",
+              (disabled) && "text-gray-600",
+            ) }
+          >
+            { label }
+          </label>
+        </div>
+      </div>
     </div>
   )
 }))
