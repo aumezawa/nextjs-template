@@ -36,8 +36,7 @@ export default React.memo<ButtonProps>(function Button({
       type="button"
       className={
         cn(
-          "inline-flex items-center text-center text-sm font-medium rounded-lg focus:ring-4 focus:outline-none",
-          "mx-2 my-2 px-5 py-2.5 gap-2",
+          "mx-2 my-2 px-4 py-3 text-center text-sm font-medium rounded-lg focus:ring-4 focus:outline-none",
           (color === "blue") && "text-white bg-blue-700 hover:bg-blue-800 focus:ring-blue-300",
           disabled && (color === "blue") && "text-white bg-blue-400 hover:bg-0 cursor-not-allowed",
           (color === "dark") && "text-white bg-gray-800 hover:bg-gray-900 focus:ring-gray-300",
@@ -50,7 +49,7 @@ export default React.memo<ButtonProps>(function Button({
           disabled && (color === "red") && "text-white bg-red-400 hover:bg-0 cursor-not-allowed",
           (color === "yellow") && "text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-yellow-300",
           disabled && (color === "yellow") && "text-white bg-yellow-400 cursor-not-allowed",
-          (type === "nav") && "m-0 px-2 py-2 text-white bg-transparent hover:text-gray-400 hover:bg-transparent focus:ring-0 rounded-md",
+          (type === "nav") && "mx-0 my-0 px-2 py-2 text-white bg-transparent hover:text-gray-400 hover:bg-transparent focus:ring-0 rounded-md",
           className,
         )
       }

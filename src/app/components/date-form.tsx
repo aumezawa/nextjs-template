@@ -12,7 +12,7 @@ type DateFormProps = {
   defaultValue?: string,
   errorMessage?: string,
   validate?: (value: string) => boolean,
-  onChange?: (value: string, valid?: boolean, title?: string) => void,
+  onChange?: (value: string, valid: boolean, title: string) => void,
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(function TextForm({
@@ -26,52 +26,61 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
   validate = undefined,
   onChange = undefined,
 }, ref) {
-  const [valid, setValid] = useState(!!defaultValue.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/))
+  const validateValue = useCallback((value: string) => {
+    let valid = !!value.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)
+    if (validate) {
+      valid = (valid && validate(value))
+    }
+    return valid
+  }, [validate])
+
+  const [valid, setValid] = useState(validateValue(defaultValue))
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (validate) {
-      setValid(validate(e.currentTarget.value))
-    }
+    const valid = validateValue(e.currentTarget.value)
     if (onChange) {
       onChange(e.currentTarget.value, valid, title)
     }
-  }, [valid, title, validate, onChange])
+    setValid(valid)
+  }, [title, onChange, validateValue])
 
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "mx-auto max-w-xs",
-      (size === "sm") && "mx-auto max-w-sm",
-      (size === "md") && "mx-auto max-w-md",
-      (size === "lg") && "mx-auto max-w-lg",
-      (size === "xl") && "mx-auto max-w-xl",
+      (size === "xs") && "max-w-xs w-full mx-auto",
+      (size === "sm") && "max-w-sm w-full mx-auto",
+      (size === "md") && "max-w-md w-full mx-auto",
+      (size === "lg") && "max-w-lg w-full mx-auto",
+      (size === "xl") && "max-w-xl w-full mx-auto",
       className,
     ) }>
-      <div className="relative w-full">
-        <p className="block text-sm font-medium mb-1 text-gray-900">
-          { label ? `${ label }:` : "" }
+      {
+        label &&
+        <p className="mb-1 text-sm font-medium text-gray-900">
+          { label }
         </p>
-        <input
-          ref={ ref }
-          type="date"
-          title={ title }
-          className={ cn(
-            "block p-2.5 w-full z-20 text-sm placeholder-gray-600 rounded-lg rounded-2 border",
-            valid && "text-green-900 bg-green-50 border-green-700",
-            !valid && "text-red-900 bg-red-50 border-red-700",
-            !validate && "text-gray-900 bg-gray-50 border-gray-700",
-            disabled && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
-          ) }
-          disabled={ disabled }
-          defaultValue={ defaultValue.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/) || "" }
-          onChange={ handleChange }
-        />
-        <p className="px-2 mt-1 text-sm text-red-600">
-        {
-            (!disabled && validate && !valid) && errorMessage
-          }
+      }
+      <input
+        ref={ ref }
+        type="date"
+        title={ title }
+        className={ cn(
+          "w-full p-2.5 text-sm placeholder-gray-600 rounded-lg rounded-2 border",
+          (valid) && "text-green-900 bg-green-50 border-green-700",
+          (!valid) && "text-red-900 bg-red-50 border-red-700",
+          (!validate) && "text-gray-900 bg-gray-50 border-gray-700",
+          (disabled) && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
+        ) }
+        disabled={ disabled }
+        defaultValue={ valid ? defaultValue : "" }
+        onChange={ handleChange }
+      />
+      {
+        (!disabled && validate && !valid && errorMessage) &&
+        <p className="mt-1 px-2 text-sm text-red-600">
+          { errorMessage }
         </p>
-      </div>
+      }
     </div>
   )
 }))

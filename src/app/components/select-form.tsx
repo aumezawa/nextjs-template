@@ -11,9 +11,10 @@ type SelectFormProps = {
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl",
   disabled?: boolean,
   placeholder?: string,
-  defaultValue?: number,
+  defaultValue?: string,
   errorMessage?: string,
-  onChange?: (value: number, valid?: boolean, title?: string) => void,
+  onChange?: (value: number, valid: boolean, title: string) => void,
+  validate?: (value: number) => boolean,
 }
 
 export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(function TextForm({
@@ -23,57 +24,75 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
   label = "",
   size = "auto",
   disabled = false,
-  placeholder = "Choose a option",
-  defaultValue = -1,
+  placeholder = "Choose an option",
+  defaultValue = "-1",
   errorMessage = "",
   onChange = undefined,
+  validate = undefined,
 }, ref) {
-  const [valid, setValid] = useState((defaultValue >= 0) && (defaultValue < options.length))
+  const validateValue = useCallback((value: string) => {
+    let valid = (Number(value) >= 0) && (Number(value) < options.length)
+    if (validate) {
+      valid = (valid && validate(Number(value)))
+    }
+    return valid
+  }, [options, validate])
+
+  const [valid, setValid] = useState(validateValue(defaultValue))
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setValid(e.currentTarget.value !== "-1")
+    const valid = validateValue(e.currentTarget.value)
     if (onChange) {
       onChange(Number(e.currentTarget.value), valid, title)
     }
-  }, [valid, title, onChange])
+    setValid(valid)
+  }, [title, onChange, validateValue])
 
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "mx-auto max-w-xs",
-      (size === "sm") && "mx-auto max-w-sm",
-      (size === "md") && "mx-auto max-w-md",
-      (size === "lg") && "mx-auto max-w-lg",
-      (size === "xl") && "mx-auto max-w-xl",
+      (size === "xs") && "max-w-xs w-full mx-auto",
+      (size === "sm") && "max-w-sm w-full mx-auto",
+      (size === "md") && "max-w-md w-full mx-auto",
+      (size === "lg") && "max-w-lg w-full mx-auto",
+      (size === "xl") && "max-w-xl w-full mx-auto",
       className,
     ) }>
-      <div className="relative w-full">
-        <p className="block mb-1 text-sm font-medium text-gray-900">
-          { label ? `${ label }:` : "" }
+      {
+        label &&
+        <p className="mb-1 text-sm font-medium text-gray-900">
+          { label }
         </p>
-        <select
-          ref={ ref }
-          className={ cn (
-            "block p-2.5 w-full z-20 text-sm rounded-lg rounded-2 border",
-            valid && "text-green-900 bg-green-50 border-green-700",
-            !valid && "text-red-900 bg-red-50 border-red-700",
-          ) }
-          defaultValue={ defaultValue }
-          onChange={ handleChange }
-        >
-          <option value="-1">{ placeholder }</option>
-          {
-            options.map((option: string, index: number) => (
-              <option key={ index } value={ String(index) }>{ option }</option>
-            ))
-          }
-        </select>
-        <p className="px-2 mt-1 text-sm text-red-600">
-          {
-            (!disabled && !valid) && errorMessage
-          }
+      }
+      <select
+        ref={ ref }
+        className={ cn (
+          "w-full p-2.5 text-sm rounded-lg rounded-2 border",
+          (valid) && "text-green-900 bg-green-50 border-green-700",
+          (!valid) && "text-red-900 bg-red-50 border-red-700",
+          (disabled) && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
+        ) }
+        disabled={ disabled }
+        defaultValue={ defaultValue }
+        onChange={ handleChange }
+      >
+        <option value="-1">
+          { placeholder }
+        </option>
+        {
+          options.map((option: string, index: number) => (
+            <option key={ index } value={ String(index) }>
+              { option }
+            </option>
+          ))
+        }
+      </select>
+      {
+        (!disabled && validate && !valid && errorMessage) &&
+        <p className="mt-1 px-2 text-sm text-red-600">
+          { errorMessage }
         </p>
-      </div>
+      }
     </div>
   )
 }))

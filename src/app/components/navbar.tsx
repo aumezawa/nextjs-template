@@ -15,27 +15,25 @@ export default React.memo<NavibarProps>(function Navibar({
 }){
   return (
     <div className={ cn (
-      "text-white bg-gray-800 border-gray-800",
+      "text-white bg-gray-800 border border-gray-800",
       className,
     ) }>
-      <div className="max-w-full flex flex-wrap items-center justify-between mx-auto px-4 py-2">
-        <span className="self-center text-2xl font-semibold whitespace-nowrap">
+      <div className="flex justify-between max-w-full px-4 py-2">
+        <span className="text-2xl font-semibold whitespace-nowrap">
           { title }
         </span>
-        <div className="block">
-          <ul className="flex flex-row space-x-8 font-medium">
+        <span>
+          <ul className="flex flex-row space-x-4">
             {
               buttons.map((button: React.JSX.Element, index: number) => (
                 <li key={ index }>
-                  {
-                    button
-                  }
+                  { button }
                 </li>
               ))
             }
           </ul>
-        </div>
+        </span>
       </div>
-    </div >
+    </div>
   )
 })

@@ -30,11 +30,11 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "mx-auto max-w-xs",
-      (size === "sm") && "mx-auto max-w-sm",
-      (size === "md") && "mx-auto max-w-md",
-      (size === "lg") && "mx-auto max-w-lg",
-      (size === "xl") && "mx-auto max-w-xl",
+      (size === "xs") && "max-w-xs w-full mx-auto",
+      (size === "sm") && "max-w-sm w-full mx-auto",
+      (size === "md") && "max-w-md w-full mx-auto",
+      (size === "lg") && "max-w-lg w-full mx-auto",
+      (size === "xl") && "max-w-xl w-full mx-auto",
       className,
     ) }>
       <input
@@ -43,7 +43,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
         title={ title }
         className={ cn(
           "w-4 h-4 text-blue-600 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 focus:ring-2",
-          disabled && "border-gray-300 cursor-not-allowed",
+          (disabled) && "border-gray-300 cursor-not-allowed",
         ) }
         disabled={ disabled }
         defaultChecked={ defaultChecked }
@@ -51,9 +51,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
       />
       <span
         className={ cn(
-          "text-sm font-medium text-gray-900",
-          label && "ms-2",
-          disabled && "text-gray-600",
+          "text-sm font-medium text-gray-900 whitespace-nowrap",
+          (label) && "ms-2",
+          (disabled) && "text-gray-600",
         ) }
       >
         { label }

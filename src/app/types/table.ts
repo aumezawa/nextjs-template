@@ -2,7 +2,7 @@ export type TableContent = {
   [label: string]: string,
 }
 
-export type Table = {
+export type TableFormat = {
   title: string,
   labels: string[],
   contents: Array<TableContent>,

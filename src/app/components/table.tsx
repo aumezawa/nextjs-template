@@ -3,13 +3,13 @@ import React, { useCallback, useRef, useState } from "react"
 import { cn } from "@/app/libs/utils"
 
 import Chackbox from "@/app/components/checkbox"
-import IconButtun from "@/app/components/icon-buttun"
-import { Table, TableContent } from "@/app/types/table"
+import IconButtun from "@/app/components/icon-button"
+import type { TableFormat, TableContent } from "@/app/types/table"
 
 
 type TableProps = {
   className?: string,
-  data: Table,
+  data?: TableFormat,
   checkable?: boolean,
   commandable?: boolean,
   onChecked?: (value: Array<string>) => void,
@@ -18,7 +18,7 @@ type TableProps = {
 
 export default React.memo<TableProps>(function Table({
   className = "",
-  data = undefined,
+  data = { title: "untitled", labels: ["unlabeled"], contents: [{ unlabeled: "no data" }] },
   checkable = false,
   commandable = false,
   onChecked = undefined,
@@ -48,13 +48,13 @@ export default React.memo<TableProps>(function Table({
     } else {
       if (value) {
         updated = [...checked, title].sort()
-        if (updated.length === data?.contents.length) {
+        if (updated.length === data.contents.length) {
           if (refs.current.head.current) {
             refs.current.head.current.checked = value
           }
         }
       } else {
-        updated = checked.filter((v: string) => (v !== title))
+        updated = checked.filter((row: string) => (row !== title))
         if (refs.current.head.current) {
           refs.current.head.current.checked = value
         }
@@ -90,7 +90,7 @@ export default React.memo<TableProps>(function Table({
               </th>
             }
             {
-              data?.labels.map((label: string, index: number) => (
+              data.labels.map((label: string, index: number) => (
                 <th key={ index } scope="col" className="px-6 py-3">
                   { label }
                 </th>
@@ -104,7 +104,7 @@ export default React.memo<TableProps>(function Table({
           </tr>
         </thead>
         {
-          data?.contents.map((content: TableContent, row: number) => {
+          data.contents.map((content: TableContent, row: number) => {
             if (row > refs.current.body.length - 1) {
               refs.current.body.push(React.createRef<HTMLInputElement>())
             }
@@ -127,7 +127,7 @@ export default React.memo<TableProps>(function Table({
                     </td>
                   }
                   {
-                    data?.labels.map((label: string, col: number) => (
+                    data.labels.map((label: string, col: number) => (
                       <td key={ col } scope="col" className="px-6 py-4">
                         { content[label] }
                       </td>

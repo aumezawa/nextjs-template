@@ -32,16 +32,23 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
   onChange = undefined,
   onSubmit = undefined,
 }, ref) {
-  const [valid, setValid] = useState(validate === undefined)
+  const validateValue = useCallback((value: string) => {
+    let valid = true
+    if (validate) {
+      valid = (valid && validate(value))
+    }
+    return valid
+  }, [validate])
+
+  const [valid, setValid] = useState(validateValue(defaultValue))
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (validate) {
-      setValid(validate(e.currentTarget.value))
-    }
+    const valid = validateValue(e.currentTarget.value)
     if (onChange) {
       onChange(e.currentTarget.value, valid, title)
     }
-  }, [valid, title, validate, onChange])
+    setValid(valid)
+  }, [title, onChange, validateValue])
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
@@ -52,27 +59,30 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "mx-auto max-w-xs",
-      (size === "sm") && "mx-auto max-w-sm",
-      (size === "md") && "mx-auto max-w-md",
-      (size === "lg") && "mx-auto max-w-lg",
-      (size === "xl") && "mx-auto max-w-xl",
+      (size === "xs") && "max-w-xs w-full mx-auto",
+      (size === "sm") && "max-w-sm w-full mx-auto",
+      (size === "md") && "max-w-md w-full mx-auto",
+      (size === "lg") && "max-w-lg w-full mx-auto",
+      (size === "xl") && "max-w-xl w-full mx-auto",
       className,
     ) }>
-      <div className="relative w-full">
-        <p className="block text-sm font-medium mb-1 text-gray-900">
-          { label ? `${ label }:` : "" }
+      {
+        label &&
+        <p className="mb-1 text-sm font-medium text-gray-900">
+          { label }
         </p>
+      }
+      <div className="relative">
         <input
           ref={ ref }
           type="text"
           title={ title }
           className={ cn(
-            "block p-2.5 w-full z-20 text-sm placeholder-gray-600 rounded-lg rounded-2 border",
-            valid && "text-green-900 bg-green-50 border-green-700",
-            !valid && "text-red-900 bg-red-50 border-red-700",
-            !validate && "text-gray-900 bg-gray-50 border-gray-700",
-            disabled && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
+            "w-full p-2.5 text-sm placeholder-gray-600 rounded-lg rounded-2 border",
+            (valid) && "text-green-900 bg-green-50 border-green-700",
+            (!valid) && "text-red-900 bg-red-50 border-red-700",
+            (!validate) && "text-gray-900 bg-gray-50 border-gray-700",
+            (disabled) && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
           ) }
           disabled={ disabled }
           placeholder={ placeholder }
@@ -83,9 +93,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
           button &&
           <button
             className={ cn(
-              "absolute top-0 end-0 p-2 h-full text-sm font-medium text-white rounded-e-lg border",
-              (!disabled &&  valid) && "bg-blue-700 border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300",
-              ( disabled || !valid) && "bg-blue-400 border-blue-400 cursor-not-allowed",
+              "absolute h-full top-0 end-0 px-3 text-white rounded-e-lg border",
+              (!disabled && valid) && "bg-blue-700 border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300",
+              (disabled || !valid) && "bg-blue-400 border-blue-400 cursor-not-allowed",
             ) }
             disabled={ disabled || !valid }
             onClick={ handleSubmit }
@@ -110,11 +120,12 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
             }
           </button>
         }
-        <p className="px-2 mt-1 text-sm text-red-600">
-          {
-            (!disabled && validate && !valid) && errorMessage
-          }
-        </p>
+        {
+          (!disabled && validate && !valid && errorMessage) &&
+          <p className="mt-1 px-2 text-sm text-red-600">
+            { errorMessage }
+          </p>
+        }
       </div>
     </div>
   )
