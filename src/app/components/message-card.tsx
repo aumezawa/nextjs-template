@@ -29,7 +29,7 @@ export default React.memo<MessageCardProps>(function MessageCard({
   const [editable, setEditable] = useState(false)
 
   const refs = useRef({
-    message: React.createRef<HTMLInputElement>()
+    message: React.createRef<HTMLInputElement>(),
   })
 
   const newMessage = useRef(message)
@@ -43,14 +43,14 @@ export default React.memo<MessageCardProps>(function MessageCard({
       refs.current.message.current.value = message
     }
     setEditable(!editable)
-  }, [editable])
+  }, [editable, message])
 
   const handleSubmitCommand = useCallback(() => {
     if (onCommand) {
       onCommand(title, command!, newMessage.current)
     }
     setEditable(!editable)
-  }, [editable, newMessage.current, title, command, onCommand])
+  }, [editable, title, command, onCommand])
 
   const handleChangeMessage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     newMessage.current = e.currentTarget.value

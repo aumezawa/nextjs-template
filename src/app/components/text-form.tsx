@@ -4,6 +4,7 @@ import { cn } from "@/app/libs/utils"
 
 
 type TextFormProps = {
+  id?: string,
   className?: string,
   title?: string,
   label?: string,
@@ -13,11 +14,12 @@ type TextFormProps = {
   defaultValue?: string,
   button?: undefined | "search" | "download" | "upload" | "message",
   validate?: (value: string) => boolean,
-  onChange?: (value: string, valid?: boolean, title?: string) => void,
+  onChange?: (value: string, valid: boolean, title: string) => void,
   onSubmit?: () => void,
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(function TextForm({
+  id = undefined,
   className = "",
   title = "",
   label = "",
@@ -74,6 +76,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
       <div className="flex flex-row">
         <input
           ref={ ref }
+          id={ id }
           type="text"
           title={ title }
           className={ cn(

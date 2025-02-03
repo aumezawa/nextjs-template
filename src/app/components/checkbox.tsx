@@ -3,6 +3,7 @@ import { cn } from "@/app/libs/utils"
 
 
 type CheckboxProps = {
+  id?: string,
   className?: string,
   title?: string,
   label?: string,
@@ -13,6 +14,7 @@ type CheckboxProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox({
+  id = undefined,
   className = "",
   title = "",
   label = "",
@@ -40,6 +42,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
     ) }>
       <input
         ref={ ref }
+        id={ id }
         type="checkbox"
         title={ title }
         className={ cn(

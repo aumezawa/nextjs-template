@@ -14,7 +14,7 @@ type ButtonProps = {
   onClick?: (title: string) => void,
 }
 
-export default React.memo<ButtonProps>(function Button({
+export default React.memo(React.forwardRef<HTMLButtonElement, ButtonProps>(function Button({
   className = "",
   title = "",
   type = undefined,
@@ -24,7 +24,7 @@ export default React.memo<ButtonProps>(function Button({
   open = undefined,
   close = undefined,
   onClick = undefined,
-}){
+}, ref){
   const handleClick = useCallback(() => {
     if (onClick) {
       onClick(title)
@@ -33,6 +33,7 @@ export default React.memo<ButtonProps>(function Button({
 
   return (
     <button
+      ref={ ref }
       type="button"
       className={
         cn(
@@ -62,4 +63,4 @@ export default React.memo<ButtonProps>(function Button({
       { label }
     </button>
   )
-})
+}))

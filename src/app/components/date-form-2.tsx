@@ -6,6 +6,7 @@ import { cn } from "@/app/libs/utils"
 type DateForm2Props = {
   id: string,
   className?: string,
+  type?: "date" | "time" | "datetime-local",
   title?: string,
   label?: string,
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
@@ -18,6 +19,7 @@ type DateForm2Props = {
 export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(function DateForm2({
   id = undefined,
   className = "",
+  type = "datetime-local",
   title = "",
   label = "no label",
   size = "auto",
@@ -27,12 +29,17 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
   onChange = undefined,
 }, ref) {
   const validateValue = useCallback((value: string) => {
-    let valid = !!value.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)
+    const patterns = {
+      "date": /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/,
+      "time": /^[0-9]{2}:[0-9]{2}$/,
+      "datetime-local": /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$/,
+    }
+    let valid = !!value.match(patterns[type])
     if (validate) {
       valid = (valid && validate(value))
     }
     return valid
-  }, [validate])
+  }, [type, validate])
 
   const [valid, setValid] = useState(validateValue(defaultValue))
 
@@ -59,7 +66,8 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
         <div className="relative w-full z-0 mt-3 group">
           <input
             ref={ ref }
-            type="date"
+            id={ id }
+            type={ type }
             title={ title }
             className={ cn(
               "block w-full py-2.5 px-0 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",

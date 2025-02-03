@@ -13,7 +13,7 @@ type IconButtonProps = {
   onClick?: (title: string) => void
 }
 
-export default React.memo<IconButtonProps>(function IconButton({
+export default React.memo(React.forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton({
   className = "",
   title = "",
   icon = "edit",
@@ -22,7 +22,7 @@ export default React.memo<IconButtonProps>(function IconButton({
   open = undefined,
   close = undefined,
   onClick = undefined,
-}){
+}, ref){
   const handleClick = useCallback(() => {
     if (onClick) {
       onClick(title)
@@ -31,6 +31,7 @@ export default React.memo<IconButtonProps>(function IconButton({
 
   return (
     <button
+      ref={ ref }
       type="button"
       className={
         cn(
@@ -87,4 +88,4 @@ export default React.memo<IconButtonProps>(function IconButton({
       </svg>
     </button>
   )
-})
+}))

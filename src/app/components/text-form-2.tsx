@@ -13,7 +13,7 @@ type TextForm2Props = {
   defaultValue?: string,
   button?: undefined | "search" | "download" | "upload" | "message",
   validate?: (value: string) => boolean,
-  onChange?: (value: string, valid?: boolean, title?: string) => void,
+  onChange?: (value: string, valid: boolean, title: string) => void,
   onSubmit?: () => void,
 }
 

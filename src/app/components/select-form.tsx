@@ -4,6 +4,7 @@ import { cn } from "@/app/libs/utils"
 
 
 type SelectFormProps = {
+  id?: string,
   options?: string[],
   className?: string,
   title?: string,
@@ -17,6 +18,7 @@ type SelectFormProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(function SelectForm({
+  id = undefined,
   options = [],
   className = "",
   title = "",
@@ -65,6 +67,7 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
       }
       <select
         ref={ ref }
+        id={ id }
         className={ cn (
           "w-full p-2.5 text-sm rounded-lg rounded-2 border",
           (valid) && "text-green-900 bg-green-50 border-green-700",

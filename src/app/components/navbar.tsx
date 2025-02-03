@@ -11,7 +11,7 @@ type NavibarProps = {
 export default React.memo<NavibarProps>(function Navibar({
   className = "",
   title = "Project",
-  buttons = []
+  buttons = [],
 }){
   return (
     <div className={ cn (

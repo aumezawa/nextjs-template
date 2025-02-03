@@ -3,7 +3,7 @@ import React, { useCallback, useRef, useState } from "react"
 import { cn } from "@/app/libs/utils"
 
 import Chackbox from "@/app/components/checkbox"
-import IconButtun from "@/app/components/icon-button"
+import IconButton from "@/app/components/icon-button"
 import type { TableFormat, TableContent } from "@/app/types/table"
 
 
@@ -15,7 +15,7 @@ type TableProps = {
   filter?: (key: string, value: string) => boolean,
   remind?: (ket: string, value: string) => "none" | "info" | "warning" | "error",
   onChecked?: (value: Array<string>) => void,
-  onCommand?: (title: string) => void,
+  onCommand?: (title: string, content: TableContent) => void,
 }
 
 export default React.memo<TableProps>(function Table({
@@ -23,8 +23,8 @@ export default React.memo<TableProps>(function Table({
   data = { title: "untitled", labels: ["unlabeled"], contents: [{ unlabeled: "no data" }] },
   checkable = false,
   commandable = false,
-  filter = (_key: string, _value: string) => true,
-  remind = (_key: string, _value: string) => "none",
+  filter = () => true,
+  remind = () => "none",
   onChecked = undefined,
   onCommand = undefined,
 }){
@@ -72,9 +72,9 @@ export default React.memo<TableProps>(function Table({
 
   const handleCommand = useCallback((title: string) => {
     if (onCommand) {
-      onCommand(title)
+      onCommand(title, data.contents[Number(title)])
     }
-  }, [onCommand])
+  }, [data, onCommand])
 
   return (
     <div className={ cn(
@@ -180,7 +180,7 @@ export default React.memo<TableProps>(function Table({
                   {
                     commandable &&
                     <td className="sticky right-0 z-0 px-2 py-2">
-                      <IconButtun
+                      <IconButton
                         className="m-0 p-1"
                         title={ String(row) }
                         icon="edit"
