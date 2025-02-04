@@ -74,7 +74,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
               (valid) && "text-green-700 border-green-500 focus:border-green-500",
               (!valid) && "text-red-700 border-red-500 focus:border-red-500",
               (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
-              (disabled) && "text-gray-600 border-gray-400 cursor-not-allowed",
+              (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
             ) }
             placeholder=""
             disabled={ disabled }
@@ -88,7 +88,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
               (valid) && "text-green-500 peer-focus:text-green-700",
               (!valid) && "text-red-500 peer-focus:text-red-700",
               (!validate) && "text-gray-700 peer-focus:text-blue-700",
-              (disabled) && "text-gray-600",
+              (disabled) && "text-gray-400",
             ) }
           >
             { label }

@@ -12,8 +12,14 @@ type TableProps = {
   data?: TableFormat,
   checkable?: boolean,
   commandable?: boolean,
-  filter?: (key: string, value: string) => boolean,
-  remind?: (ket: string, value: string) => "none" | "info" | "warning" | "error",
+  linkable?: boolean,
+  linkIcon?: boolean,
+  alignNum?: boolean,
+  highlight?: (value: string | number | boolean, label: string, row: number) => "none" | "info" | "warning" | "error" | "blind",
+  filterRow?: (value: string | number | boolean, label: string, row: number) => boolean,
+  filterCol?: (label: string) => boolean,
+  replaceLabel?: (label: string) => string,
+  replaceValue?: (value: string | number | boolean, label: string, row: number) => string | number | boolean | React.JSX.Element,
   onChecked?: (value: Array<string>) => void,
   onCommand?: (title: string, content: TableContent) => void,
 }
@@ -23,8 +29,14 @@ export default React.memo<TableProps>(function Table({
   data = { title: "untitled", labels: ["unlabeled"], contents: [{ unlabeled: "no data" }] },
   checkable = false,
   commandable = false,
-  filter = () => true,
-  remind = () => "none",
+  linkable = false,
+  linkIcon = false,
+  alignNum = false,
+  highlight = () => "none",
+  filterRow = () => true,
+  filterCol = () => true,
+  replaceLabel = (label: string) => (label),
+  replaceValue = (value: string | number | boolean) => value,
   onChecked = undefined,
   onCommand = undefined,
 }){
@@ -40,7 +52,7 @@ export default React.memo<TableProps>(function Table({
 
     if (title === "header") {
       if (value) {
-        updated = refs.current.body.map((_: React.RefObject<HTMLInputElement | null>, index: number) => (String(index)))
+        updated = refs.current.body.map((_: React.RefObject<HTMLInputElement | null>, index: number) => index.toString())
       } else {
         updated = []
       }
@@ -97,9 +109,11 @@ export default React.memo<TableProps>(function Table({
               </th>
             }
             {
-              data.labels.map((label: string, index: number) => (
+              data.labels
+              .filter((label: string) => (filterCol(label)))
+              .map((label: string, index: number) => (
                 <th key={ index } scope="col" className="px-6 py-3">
-                  { label }
+                  { replaceLabel(label) }
                 </th>
               ))
             }
@@ -120,10 +134,10 @@ export default React.memo<TableProps>(function Table({
               refs.current.body = refs.current.body.slice(0, refs.current.body.length)
             }
 
-            // filter
+            // filter rows
             if (
               !data.labels
-              .map((label: string) => (filter(label, content[label] || "")))
+              .map((label: string) => (filterRow(content[label], label, row)))
               .reduce((acc: boolean, cur: boolean) => (acc || cur))
             ) {
               return (
@@ -132,11 +146,13 @@ export default React.memo<TableProps>(function Table({
               )
             }
 
-            // remind
+            // highlight
             const type = data.labels
-              .map((label: string) => (remind(label, content[label] || "none")))
+              .map((label: string) => (highlight(content[label], label, row)))
               .reduce((acc: string, cur: string) => {
-                if (acc === "error" || cur === "error") {
+                if (acc === "blind" || cur === "blind") {
+                  return "blind"
+                } else if (acc === "error" || cur === "error") {
                   return "error"
                 } else if (acc === "warning" || cur === "warning") {
                   return "warning"
@@ -151,13 +167,15 @@ export default React.memo<TableProps>(function Table({
               <tbody key={ row }>
                 <tr className={ cn(
                   "text-nowrap bg-white hover:bg-gray-100 border-b",
-                  (type === "none" && (checked.includes(String(row)))) && "bg-blue-100 hover:bg-blue-200",
+                  (type === "none" && (checked.includes(row.toString()))) && "bg-blue-100 hover:bg-blue-200",
                   (type === "info") && "bg-green-100 hover:bg-green-200",
-                  (type === "info" && (checked.includes(String(row)))) && "bg-green-200 hover:bg-green-300",
+                  (type === "info" && (checked.includes(row.toString()))) && "bg-green-200 hover:bg-green-300",
                   (type === "warning") && "bg-yellow-100 hover:bg-yellow-200",
-                  (type === "warning" && (checked.includes(String(row)))) && "bg-yellow-200 hover:bg-yellow-300",
+                  (type === "warning" && (checked.includes(row.toString()))) && "bg-yellow-200 hover:bg-yellow-300",
                   (type === "error") && "bg-red-100 hover:bg-red-200",
-                  (type === "error" && (checked.includes(String(row)))) && "bg-red-200 hover:bg-red-300",
+                  (type === "error" && (checked.includes(row.toString()))) && "bg-red-200 hover:bg-red-300",
+                  (type === "blind") && "bg-gray-300 hover:bg-gray-400",
+                  (type === "blind" && (checked.includes(row.toString()))) && "bg-gray-400 hover:bg-gray-500",
                 ) }>
                   {
                     checkable &&
@@ -165,15 +183,66 @@ export default React.memo<TableProps>(function Table({
                       <Chackbox
                         ref={ refs.current.body[row] }
                         className="m-0"
-                        title={ String(row) }
+                        title={ row.toString() }
                         onChange={ handleChecked }
                       />
                     </td>
                   }
                   {
-                    data.labels.map((label: string, col: number) => (
+                    data.labels
+                    .filter((label: string) => (filterCol(label)))
+                    .map((label: string, col: number) => (
                       <td key={ col } scope="col" className="px-6 py-3">
-                        { content[label] }
+                        {
+                          (() => {
+                            const value = replaceValue(content[label], label, row)
+                            if (value === undefined) {
+                              return ""
+                            }
+                            if (value === true) {
+                              return (
+                                <svg className="w-6 h-6 text-green-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                </svg>
+                              )
+                            }
+                            if (value === false) {
+                              return (
+                                <svg className="w-6 h-6 text-red-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14"/>
+                                </svg>
+                              )
+                            }
+                            if (alignNum && typeof value === "number") {
+                              return (
+                                <p className="text-right">
+                                  { value }
+                                </p>
+                              )
+                            }
+                            if (linkable && (typeof value === "string") && (value.startsWith("http://") || value.startsWith("https://"))) {
+                              return (
+                                <a className="text-blue-600 hover:text-blue-800 hover:underline" href={ value } target="_blank">
+                                  {
+                                    (() => {
+                                      if (linkIcon) {
+                                        return (
+                                          <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                            <path fillRule="evenodd" d="M8 5a1 1 0 0 1 1-1h11a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1a1 1 0 1 1 0-2h1V6H9a1 1 0 0 1-1-1Z" clipRule="evenodd"/>
+                                            <path fillRule="evenodd" d="M4 7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H4Zm0 11v-5.5h11V18H4Z" clipRule="evenodd"/>
+                                          </svg>
+                                        )
+                                      } else {
+                                        return value
+                                      }
+                                    })()
+                                  }
+                                </a>
+                              )
+                            }
+                            return value
+                          })()
+                        }
                       </td>
                     ))
                   }
@@ -182,7 +251,7 @@ export default React.memo<TableProps>(function Table({
                     <td className="sticky right-0 z-0 px-2 py-2">
                       <IconButton
                         className="m-0 p-1"
-                        title={ String(row) }
+                        title={ row.toString() }
                         icon="edit"
                         onClick={ handleCommand }
                       />

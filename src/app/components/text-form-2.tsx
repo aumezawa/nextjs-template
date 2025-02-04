@@ -77,7 +77,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
               (valid) && "text-green-700 border-green-500 focus:border-green-500",
               (!valid) && "text-red-700 border-red-500 focus:border-red-500",
               (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
-              (disabled) && "text-gray-600 border-gray-400 cursor-not-allowed",
+              (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
             ) }
             placeholder=""
             disabled={ disabled }
@@ -91,7 +91,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
               (valid) && "text-green-500 peer-focus:text-green-700",
               (!valid) && "text-red-500 peer-focus:text-red-700",
               (!validate) && "text-gray-700 peer-focus:text-blue-700",
-              (disabled) && "text-gray-600",
+              (disabled) && "text-gray-400",
             ) }
           >
             { label }
@@ -103,9 +103,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
             className={ cn(
               "mt-5 px-3 text-gray-900 bg-transparent border-0 border-b-2",
               (valid) && "border-green-500 focus:text-green-700",
-              (!valid) && "border-red-500 cursor-not-allowed",
+              (!valid) && "text-gray-400 border-red-500 cursor-not-allowed",
               (!validate) && "border-gray-700 focus:text-blue-700",
-              (disabled) && "border-gray-400 cursor-not-allowed",
+              (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
               (!disabled && valid) && "",
             ) }
             disabled={ disabled || !valid }

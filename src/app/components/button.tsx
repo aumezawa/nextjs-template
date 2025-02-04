@@ -49,7 +49,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, ButtonProps>(funct
           (color === "red") && "text-white bg-red-700 hover:bg-red-800 focus:ring-red-300",
           disabled && (color === "red") && "text-white bg-red-400 hover:bg-0 cursor-not-allowed",
           (color === "yellow") && "text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-yellow-300",
-          disabled && (color === "yellow") && "text-white bg-yellow-400 cursor-not-allowed",
+          disabled && (color === "yellow") && "text-white bg-yellow-300 hover:bg-0 cursor-not-allowed",
           (type === "nav") && "mx-0 my-0 px-2 py-2 text-white bg-transparent hover:text-gray-400 hover:bg-transparent focus:ring-0 rounded-md",
           className,
         )

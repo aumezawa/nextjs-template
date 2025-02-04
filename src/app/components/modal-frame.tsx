@@ -55,6 +55,7 @@ export default React.memo<ModalFrameProps>(function ModalFrame({
   return (
     <div id={ id } data-modal-backdrop="static" data-modal-placement="top-center" tabIndex={ -1 } aria-hidden="true"
       className="hidden fixed w-full overflow-x-hidden overflow-y-hidden top-0 left-0 right-0 z-50 justify-center items-center inset-0"
+      suppressHydrationWarning
     >
       <div className={ cn(
         "w-full",

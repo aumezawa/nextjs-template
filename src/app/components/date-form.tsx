@@ -64,7 +64,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
     ) }>
       {
         label &&
-        <p className="mb-1 text-sm font-medium text-gray-900">
+        <p className={ cn(
+          "mb-1 text-sm font-medium text-gray-900",
+          (disabled) && "text-gray-400",
+        ) }>
           { label }
         </p>
       }
@@ -78,7 +81,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
           (valid) && "text-green-900 bg-green-50 border-green-700",
           (!valid) && "text-red-900 bg-red-50 border-red-700",
           (!validate) && "text-gray-900 bg-gray-50 border-gray-700",
-          (disabled) && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
+          (disabled) && "text-gray-400 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
         ) }
         disabled={ disabled }
         defaultValue={ valid ? defaultValue : "" }

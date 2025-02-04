@@ -61,7 +61,10 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
     ) }>
       {
         label &&
-        <p className="mb-1 text-sm font-medium text-gray-900">
+        <p className={ cn(
+          "mb-1 text-sm font-medium text-gray-900",
+          (disabled) && "text-gray-400",
+        ) }>
           { label }
         </p>
       }
@@ -72,7 +75,7 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
           "w-full p-2.5 text-sm rounded-lg rounded-2 border",
           (valid) && "text-green-900 bg-green-50 border-green-700",
           (!valid) && "text-red-900 bg-red-50 border-red-700",
-          (disabled) && "text-gray-600 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
+          (disabled) && "text-gray-400 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
         ) }
         disabled={ disabled }
         defaultValue={ defaultValue }
@@ -83,7 +86,7 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
         </option>
         {
           options.map((option: string, index: number) => (
-            <option key={ index } value={ String(index) }>
+            <option key={ index } value={ index.toString() }>
               { option }
             </option>
           ))

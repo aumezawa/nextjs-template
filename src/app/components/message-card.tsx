@@ -10,7 +10,7 @@ type MessageCardProps = {
   user?: string,
   date?: string,
   own?: boolean,
-  type?: "info" | "warning" | "error",
+  type?: "normal" | "info" | "warning" | "error",
   command?: undefined | "edit" | "delete",
   onCommand?: (title: string, command: string, message: string) => void,
 }
@@ -22,7 +22,7 @@ export default React.memo<MessageCardProps>(function MessageCard({
   user = "Unknown",
   date = "someday",
   own = false,
-  type = "info",
+  type = "normal",
   command = undefined,
   onCommand = undefined,
 }){
@@ -66,7 +66,8 @@ export default React.memo<MessageCardProps>(function MessageCard({
         "flex flex-col max-w-xl w-full mb-2 px-4 py-3",
         (own) && "rounded-ss-xl rounded-es-xl rounded-ee-xl",
         (!own) && "rounded-se-xl rounded-es-xl rounded-ee-xl",
-        (type === "info") && "bg-gray-100",
+        (type === "normal") && "bg-gray-100",
+        (type === "info") && "bg-green-100",
         (type === "warning") && "bg-yellow-100",
         (type === "error") && "bg-red-100",
       ) }>
@@ -74,7 +75,8 @@ export default React.memo<MessageCardProps>(function MessageCard({
           <div className="flex items-center space-x-2">
             <span className={ cn(
               "text-sm font-semibold",
-              (type === "info") && "text-gray-900",
+              (type === "normal") && "text-gray-900",
+              (type === "info") && "text-green-900",
               (type === "warning") && "text-yellow-900",
               (type === "error") && "text-red-900",
             ) }>
@@ -82,7 +84,8 @@ export default React.memo<MessageCardProps>(function MessageCard({
             </span>
             <span className={ cn(
               "text-sm font-semibold",
-              (type === "info") && "text-gray-500",
+              (type === "normal") && "text-gray-500",
+              (type === "info") && "text-green-500",
               (type === "warning") && "text-yellow-500",
               (type === "error") && "text-red-500",
             ) }>
@@ -98,7 +101,8 @@ export default React.memo<MessageCardProps>(function MessageCard({
                   type="button"
                   className={ cn(
                     "w-6 h-6 text-gray-800 bg-transparent hover:text-gray-900 rounded-lg",
-                    (type === "info") && "hover:bg-gray-300",
+                    (type === "normal") && "hover:bg-gray-300",
+                    (type === "info") && "hover:bg-green-300",
                     (type === "warning") && "hover:bg-yellow-300",
                     (type === "error") && "hover:bg-red-300",
                   ) }
@@ -125,7 +129,8 @@ export default React.memo<MessageCardProps>(function MessageCard({
                     type="button"
                     className={ cn(
                       "w-6 h-6 text-gray-800 bg-transparent hover:text-gray-900 rounded-lg",
-                      (type === "info") && "hover:bg-gray-300",
+                      (type === "normal") && "hover:bg-gray-300",
+                      (type === "info") && "hover:bg-green-300",
                       (type === "warning") && "hover:bg-yellow-300",
                       (type === "error") && "hover:bg-red-300",
                     ) }
@@ -139,7 +144,8 @@ export default React.memo<MessageCardProps>(function MessageCard({
                     type="button"
                     className={ cn(
                       "w-6 h-6 text-gray-800 bg-transparent hover:text-gray-900 rounded-lg",
-                      (type === "info") && "hover:bg-gray-300",
+                      (type === "normal") && "hover:bg-gray-300",
+                      (type === "info") && "hover:bg-green-300",
                       (type === "warning") && "hover:bg-yellow-300",
                       (type === "error") && "hover:bg-red-300",
                     ) }
@@ -158,7 +164,8 @@ export default React.memo<MessageCardProps>(function MessageCard({
           ref={ refs.current.message }
           className={ cn(
             "py-1 text-sm font-normal bg-transparent focus:outline-0 hover:cursor-text",
-            (type === "info") && "text-gray-900",
+            (type === "normal") && "text-gray-900",
+            (type === "info") && "text-green-900",
             (type === "warning") && "text-yellow-900",
             (type === "error") && "text-red-900",
             (editable && command === "edit") && "font-semibold underline text-green-600",

@@ -46,8 +46,8 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
         type="checkbox"
         title={ title }
         className={ cn(
-          "w-4 h-4 text-blue-600 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 focus:ring-2",
-          (disabled) && "border-gray-300 cursor-not-allowed",
+          "w-4 h-4 text-blue-700 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 focus:ring-2",
+          (disabled) && "text-blue-400 border-gray-300 cursor-not-allowed",
         ) }
         disabled={ disabled }
         defaultChecked={ defaultChecked }
@@ -57,7 +57,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
         <span
           className={ cn(
             "text-sm font-medium text-gray-900 whitespace-nowrap",
-            (disabled) && "text-gray-600",
+            (disabled) && "text-gray-400",
           ) }
         >
           { label }

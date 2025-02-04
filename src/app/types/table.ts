@@ -1,5 +1,5 @@
 export type TableContent = {
-  [label: string]: string,
+  [label: string]: string | number | boolean,
 }
 
 export type TableFormat = {
