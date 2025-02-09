@@ -1,15 +1,16 @@
 "use client"
 import React, { useCallback, useState } from "react"
+import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
 
 type DateFormProps = {
   id?: string,
   className?: string,
-  type?: "date" | "time" | "datetime-local",
   title?: string,
-  label?: string,
+  type?: "date" | "time" | "datetime-local",
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
+  label?: string,
   disabled?: boolean,
   defaultValue?: string,
   validate?: (value: string) => boolean,
@@ -17,14 +18,14 @@ type DateFormProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(function DateForm({
-  id = undefined,
+  id = uuid(),
   className = "",
-  type = "datetime-local",
   title = "",
-  label = "",
+  type = "datetime-local",
   size = "auto",
+  label = "undefined",
   disabled = false,
-  defaultValue = "",
+  defaultValue = new Date().toISOString().slice(0,16),
   validate = undefined,
   onChange = undefined,
 }, ref) {
@@ -54,18 +55,21 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "max-w-xs w-full mx-auto",
-      (size === "sm") && "max-w-sm w-full mx-auto",
-      (size === "md") && "max-w-md w-full mx-auto",
-      (size === "lg") && "max-w-lg w-full mx-auto",
-      (size === "xl") && "max-w-xl w-full mx-auto",
-      (size === "full") && "w-full px-2",
+      (size !== "auto") && "w-full",
+      (size === "xs") && "max-w-xs mx-auto",
+      (size === "sm") && "max-w-sm mx-auto",
+      (size === "md") && "max-w-md mx-auto",
+      (size === "lg") && "max-w-lg mx-auto",
+      (size === "xl") && "max-w-xl mx-auto",
       className,
     ) }>
       {
-        label &&
+        (label) &&
         <p className={ cn(
-          "mb-1 text-sm font-medium text-gray-900",
+          "mb-1 text-sm font-medium",
+          (valid) && "text-green-500",
+          (!valid) && "text-red-500",
+          (!validate) && "text-gray-700",
           (disabled) && "text-gray-400",
         ) }>
           { label }
@@ -75,17 +79,17 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
         ref={ ref }
         id={ id }
         type={ type }
-        title={ title }
         className={ cn(
-          "w-full p-2.5 text-sm placeholder-gray-600 rounded-lg rounded-2 border",
+          "w-full p-2.5 text-sm rounded-lg rounded-2 border",
           (valid) && "text-green-900 bg-green-50 border-green-700",
           (!valid) && "text-red-900 bg-red-50 border-red-700",
           (!validate) && "text-gray-900 bg-gray-50 border-gray-700",
-          (disabled) && "text-gray-400 bg-gray-200 border-gray-400 placeholder-gray-400 cursor-not-allowed",
+          (disabled) && "text-gray-400 bg-gray-200 border-gray-400 cursor-not-allowed",
         ) }
         disabled={ disabled }
         defaultValue={ valid ? defaultValue : "" }
         onChange={ handleChange }
+        suppressHydrationWarning
       />
     </div>
   )

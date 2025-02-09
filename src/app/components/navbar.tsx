@@ -14,16 +14,20 @@ export default React.memo<NavibarProps>(function Navibar({
   buttons = [],
 }){
   return (
-    <div className={ cn (
-      "text-white bg-gray-800 border border-gray-800",
-      className,
-    ) }>
-      <div className="flex justify-between max-w-full px-4 py-2">
-        <span className="text-2xl font-semibold whitespace-nowrap">
-          { title }
+    <div
+      className={ cn(
+        "text-white bg-gray-800 border border-gray-800",
+        className,
+      ) }
+    >
+      <div className="flex justify-between items-center w-full px-2 py-2">
+        <span className="ps-2 text-2xl font-semibold whitespace-nowrap">
+          <a href=".">
+            { title }
+          </a>
         </span>
         <span>
-          <ul className="flex flex-row space-x-4">
+          <ul className="flex flex-row space-x-2">
             {
               buttons.map((button: React.JSX.Element, index: number) => (
                 <li key={ index }>

@@ -252,7 +252,7 @@ export default React.memo<TableProps>(function Table({
                       <IconButton
                         className="m-0 p-1"
                         title={ row.toString() }
-                        icon="edit"
+                        label="edit"
                         onClick={ handleCommand }
                       />
                     </td>

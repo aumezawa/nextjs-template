@@ -1,15 +1,16 @@
 "use client"
 import React, { useCallback, useState } from "react"
+import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
 
 type DateForm2Props = {
-  id: string,
+  id?: string,
   className?: string,
-  type?: "date" | "time" | "datetime-local",
   title?: string,
-  label?: string,
+  type?: "date" | "time" | "datetime-local",
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
+  label?: string,
   disabled?: boolean,
   defaultValue?: string,
   validate?: (value: string) => boolean,
@@ -17,14 +18,14 @@ type DateForm2Props = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(function DateForm2({
-  id = undefined,
+  id = uuid(),
   className = "",
-  type = "datetime-local",
   title = "",
-  label = "no label",
+  type = "datetime-local",
   size = "auto",
+  label = "undefined",
   disabled = false,
-  defaultValue = new Date().toISOString().slice(0,10),
+  defaultValue = new Date().toISOString().slice(0,16),
   validate = undefined,
   onChange = undefined,
 }, ref) {
@@ -54,46 +55,45 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "max-w-xs w-full mx-auto",
-      (size === "sm") && "max-w-sm w-full mx-auto",
-      (size === "md") && "max-w-md w-full mx-auto",
-      (size === "lg") && "max-w-lg w-full mx-auto",
-      (size === "xl") && "max-w-xl w-full mx-auto",
-      (size === "full") && "w-full px-2",
+      (size !== "auto") && "w-full",
+      (size === "xs") && "max-w-xs mx-auto",
+      (size === "sm") && "max-w-sm mx-auto",
+      (size === "md") && "max-w-md mx-auto",
+      (size === "lg") && "max-w-lg mx-auto",
+      (size === "xl") && "max-w-xl mx-auto",
       className,
     ) }>
-      <div className="flex flex-row">
-        <div className="relative w-full z-0 mt-3 group">
-          <input
-            ref={ ref }
-            id={ id }
-            type={ type }
-            title={ title }
-            className={ cn(
-              "block w-full py-2.5 px-0 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
-              (valid) && "text-green-700 border-green-500 focus:border-green-500",
-              (!valid) && "text-red-700 border-red-500 focus:border-red-500",
-              (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
-              (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
-            ) }
-            placeholder=""
-            disabled={ disabled }
-            defaultValue={ valid ? defaultValue : "" }
-            onChange={ handleChange }
-          />
-          <label
-            htmlFor={ id }
-            className={ cn(
-              "absolute top-3 -z-10 scale-75 text-sm -translate-y-6 origin-[0]",
-              (valid) && "text-green-500 peer-focus:text-green-700",
-              (!valid) && "text-red-500 peer-focus:text-red-700",
-              (!validate) && "text-gray-700 peer-focus:text-blue-700",
-              (disabled) && "text-gray-400",
-            ) }
-          >
-            { label }
-          </label>
-        </div>
+      <div className="relative w-full z-0 mt-3 group">
+        <input
+          ref={ ref }
+          id={ id }
+          type={ type }
+          className={ cn(
+            "block w-full px-0 py-2.5 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
+            (valid) && "text-green-700 border-green-500 focus:border-green-500",
+            (!valid) && "text-red-700 border-red-500 focus:border-red-500",
+            (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
+            (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
+          ) }
+          placeholder=""
+          disabled={ disabled }
+          defaultValue={ valid ? defaultValue : "" }
+          onChange={ handleChange }
+          suppressHydrationWarning
+        />
+        <label
+          htmlFor={ id }
+          className={ cn(
+            "absolute top-3 -translate-y-6 origin-[0] scale-75 text-sm",
+            (valid) && "text-green-500 peer-focus:text-green-700",
+            (!valid) && "text-red-500 peer-focus:text-red-700",
+            (!validate) && "text-gray-700 peer-focus:text-gray-900",
+            (disabled) && "text-gray-400",
+          ) }
+          suppressHydrationWarning
+        >
+          { label }
+        </label>
       </div>
     </div>
   )

@@ -6,8 +6,8 @@ type CheckboxProps = {
   id?: string,
   className?: string,
   title?: string,
-  label?: string,
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
+  label?: string,
   disabled?: boolean,
   defaultChecked?: boolean,
   onChange?: (value: boolean, title: string) => void,
@@ -17,8 +17,8 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
   id = undefined,
   className = "",
   title = "",
-  label = "",
   size = "auto",
+  label = "undefined",
   disabled = false,
   defaultChecked = false,
   onChange = undefined,
@@ -27,24 +27,23 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
     if (onChange) {
       onChange(e.currentTarget.checked, title)
     }
-  }, [onChange, title])
+  }, [title, onChange])
 
   return (
     <div className={ cn(
       "flex flex-row items-center gap-2 mb-2",
-      (size === "xs") && "max-w-xs w-full mx-auto",
-      (size === "sm") && "max-w-sm w-full mx-auto",
-      (size === "md") && "max-w-md w-full mx-auto",
-      (size === "lg") && "max-w-lg w-full mx-auto",
-      (size === "xl") && "max-w-xl w-full mx-auto",
-      (size === "full") && "w-full px-2",
+      (size !== "auto") && "w-full",
+      (size === "xs") && "max-w-xs mx-auto",
+      (size === "sm") && "max-w-sm mx-auto",
+      (size === "md") && "max-w-md mx-auto",
+      (size === "lg") && "max-w-lg mx-auto",
+      (size === "xl") && "max-w-xl mx-auto",
       className,
     ) }>
       <input
         ref={ ref }
         id={ id }
         type="checkbox"
-        title={ title }
         className={ cn(
           "w-4 h-4 text-blue-700 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 focus:ring-2",
           (disabled) && "text-blue-400 border-gray-300 cursor-not-allowed",
@@ -53,7 +52,8 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
         defaultChecked={ defaultChecked }
         onChange={ handleChange }
       />
-      { (label) &&
+      {
+        (label) &&
         <span
           className={ cn(
             "text-sm font-medium text-gray-900 whitespace-nowrap",

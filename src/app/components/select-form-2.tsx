@@ -1,102 +1,106 @@
 "use client"
 import React, { useCallback, useState } from "react"
+import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
 
-type SelectFormProps = {
-  id: string,
-  options?: string[],
+type SelectForm2Props = {
+  id?: string,
   className?: string,
   title?: string,
-  label?: string,
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
+  label?: string,
+  options?: string[],
   disabled?: boolean,
   placeholder?: string,
-  defaultValue?: string,
-  onChange?: (value: number, valid: boolean, title: string) => void,
-  validate?: (value: number) => boolean,
+  defaultIndex?: number,
+  validate?: (value: string, index: number) => boolean,
+  onChange?: (value: string, index: number, valid: boolean, title: string) => void,
 }
 
-export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(function SelectForm2({
-  id = undefined,
-  options = [],
+export default React.memo(React.forwardRef<HTMLSelectElement, SelectForm2Props>(function SelectForm2({
+  id = uuid(),
   className = "",
   title = "",
-  label = "no label",
   size = "auto",
+  label = "undefined",
+  options = [],
   disabled = false,
   placeholder = "Choose an option",
-  defaultValue = "-1",
-  onChange = undefined,
+  defaultIndex = -1,
   validate = undefined,
+  onChange = undefined,
 }, ref) {
-  const validateValue = useCallback((value: string) => {
-    let valid = (Number(value) >= 0) && (Number(value) < options.length)
+  const validateValue = useCallback((index: number) => {
+    let valid = (index >= 0) && (index < options.length)
     if (validate) {
-      valid = (valid && validate(Number(value)))
+      valid = (valid && validate(options[index], index))
     }
     return valid
   }, [options, validate])
 
-  const [valid, setValid] = useState(validateValue(defaultValue))
+  const [valid, setValid] = useState(validateValue(defaultIndex))
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const valid = validateValue(e.currentTarget.value)
+    const index = Number(e.currentTarget.value)
+    const valid = validateValue(index)
     if (onChange) {
-      onChange(Number(e.currentTarget.value), valid, title)
+      onChange(options[index], index, valid, title)
     }
     setValid(valid)
-  }, [title, onChange, validateValue])
+  }, [title, options, onChange, validateValue])
 
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "max-w-xs w-full mx-auto",
-      (size === "sm") && "max-w-sm w-full mx-auto",
-      (size === "md") && "max-w-md w-full mx-auto",
-      (size === "lg") && "max-w-lg w-full mx-auto",
-      (size === "xl") && "max-w-xl w-full mx-auto",
-      (size === "full") && "w-full px-2",
+      (size !== "auto") && "w-full",
+      (size === "xs") && "max-w-xs mx-auto",
+      (size === "sm") && "max-w-sm mx-auto",
+      (size === "md") && "max-w-md mx-auto",
+      (size === "lg") && "max-w-lg mx-auto",
+      (size === "xl") && "max-w-xl mx-auto",
       className,
     ) }>
-      <div className="flex flex-row">
-        <div className="relative w-full z-0 mt-3 group">
-          <select
-            ref={ ref }
-            id={ id }
-            className={ cn (
-              "block w-full py-2.5 px-0 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
-              (valid) && "text-green-700 border-green-500 focus:border-green-500",
-              (!valid) && "text-red-700 border-red-500 focus:border-red-500",
-              (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
-            ) }
-            disabled={ disabled }
-            defaultValue={ defaultValue }
-            onChange={ handleChange }
-          >
-            <option value="-1">
-              { placeholder }
-            </option>
-            {
-              options.map((option: string, index: number) => (
-              <option key={ index } value={ index.toString() }>
+      <div className="relative w-full mt-3 group">
+        <select
+          ref={ ref }
+          id={ id }
+          className={ cn (
+            "block w-full px-0 py-2.5 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
+            (valid) && "text-green-700 border-green-500 focus:border-green-500",
+            (!valid) && "text-red-700 border-red-500 focus:border-red-500",
+            (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
+            (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
+          ) }
+          disabled={ disabled }
+          defaultValue={ defaultIndex.toString() }
+          onChange={ handleChange }
+          suppressHydrationWarning
+        >
+          <option className="text-red-700" value="-1">
+            { placeholder }
+          </option>
+          {
+            options.map((option: string, index: number) => (
+              <option key={ index } className="text-gray-900" value={ index.toString() }>
                 { option }
               </option>
             ))
-            }
-          </select>
-          <label
-            htmlFor={ id }
-            className={ cn(
-              "absolute top-3 -z-10 scale-75 text-sm -translate-y-6 origin-[0]",
-              (valid) && "text-green-500 peer-focus:text-green-700",
-              (!valid) && "text-red-500 peer-focus:text-red-700",
-              (disabled) && "text-gray-400",
-            ) }
-          >
-            { label }
-          </label>
-        </div>
+          }
+        </select>
+        <label
+          htmlFor={ id }
+          className={ cn(
+            "absolute top-3 -translate-y-6 origin-[0] scale-75 text-sm",
+            (valid) && "text-green-500 peer-focus:text-green-700",
+            (!valid) && "text-red-500 peer-focus:text-red-700",
+            (!validate) && "text-gray-700 peer-focus:text-gray-900",
+            (disabled) && "text-gray-400",
+          ) }
+          suppressHydrationWarning
+        >
+          { label }
+        </label>
       </div>
     </div>
   )

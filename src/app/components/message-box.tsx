@@ -4,18 +4,18 @@ import { cn } from "@/app/libs/utils"
 
 type MessageBoxProps = {
   className?: string,
-  message?: string,
   type?: "normal" | "info" | "warning" | "error",
+  message?: string,
 }
 
 export default React.memo<MessageBoxProps>(function MessageBox({
   className = "",
-  message = "No message",
   type = "normal",
+  message = "No message",
 }){
   return (
     <div className={ cn(
-      "max-h-min w-full",
+      "w-full",
       className,
       "m-0 p-2",
     ) }>
