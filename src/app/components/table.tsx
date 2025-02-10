@@ -97,7 +97,12 @@ export default React.memo<TableProps>(function Table({
     ) }
     >
       <table className="w-full text-sm text-left text-gray-600">
-        <thead className="sticky top-0 z-10 text-xs uppercase text-nowrap text-gray-800 bg-gray-100">
+        <thead className={ cn(
+          "sticky top-0 z-10 text-xs uppercase text-nowrap text-gray-800 bg-gray-100",
+          (alignLabel === "left") && "text-left",
+          (alignLabel === "center") && "text-center",
+          (alignLabel === "right") && "text-right",
+        ) }>
           <tr>
             {
               checkable &&
