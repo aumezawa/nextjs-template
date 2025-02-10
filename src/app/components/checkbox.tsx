@@ -1,4 +1,5 @@
 import React, { useCallback } from "react"
+import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
 
@@ -14,7 +15,7 @@ type CheckboxProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox({
-  id = undefined,
+  id = uuid(),
   className = "",
   title = "",
   size = "auto",
@@ -51,17 +52,20 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
         disabled={ disabled }
         defaultChecked={ defaultChecked }
         onChange={ handleChange }
+        suppressHydrationWarning
       />
       {
         (label) &&
-        <span
+        <label
+          htmlFor={ id }
           className={ cn(
-            "text-sm font-medium text-gray-900 whitespace-nowrap",
-            (disabled) && "text-gray-400",
+            "text-sm font-medium text-gray-900 whitespace-nowrap cursor-pointer",
+            (disabled) && "text-gray-400 cursor-not-allowed",
           ) }
+          suppressHydrationWarning
         >
           { label }
-        </span>
+        </label>
       }
     </div>
   )

@@ -14,14 +14,15 @@ type TableProps = {
   commandable?: boolean,
   linkable?: boolean,
   linkIcon?: boolean,
-  alignNum?: boolean,
+  alignLabel?: "left" | "center" | "right",
+  alignNumber?: "left" | "center" | "right",
   highlight?: (value: string | number | boolean, label: string, row: number) => "none" | "info" | "warning" | "error" | "blind",
-  filterRow?: (value: string | number | boolean, label: string, row: number) => boolean,
   filterCol?: (label: string) => boolean,
+  filterRow?: (value: string | number | boolean, label: string, row: number) => boolean,
   replaceLabel?: (label: string) => string,
   replaceValue?: (value: string | number | boolean, label: string, row: number) => string | number | boolean | React.JSX.Element,
   onChecked?: (value: Array<string>) => void,
-  onCommand?: (title: string, content: TableContent) => void,
+  onCommand?: (row: number) => void,
 }
 
 export default React.memo<TableProps>(function Table({
@@ -31,12 +32,13 @@ export default React.memo<TableProps>(function Table({
   commandable = false,
   linkable = false,
   linkIcon = false,
-  alignNum = false,
-  highlight = () => "none",
-  filterRow = () => true,
-  filterCol = () => true,
+  alignLabel = "left",
+  alignNumber = "right",
+  highlight = () => ("none"),
+  filterCol = () => (true),
+  filterRow = () => (true),
   replaceLabel = (label: string) => (label),
-  replaceValue = (value: string | number | boolean) => value,
+  replaceValue = (value: string | number | boolean) => (value),
   onChecked = undefined,
   onCommand = undefined,
 }){
@@ -84,9 +86,9 @@ export default React.memo<TableProps>(function Table({
 
   const handleCommand = useCallback((title: string) => {
     if (onCommand) {
-      onCommand(title, data.contents[Number(title)])
+      onCommand(Number(title))
     }
-  }, [data, onCommand])
+  }, [onCommand])
 
   return (
     <div className={ cn(
@@ -104,6 +106,7 @@ export default React.memo<TableProps>(function Table({
                   ref={ refs.current.head }
                   className="m-0"
                   title="header"
+                  label=""
                   onChange={ handleChecked }
                 />
               </th>
@@ -184,6 +187,7 @@ export default React.memo<TableProps>(function Table({
                         ref={ refs.current.body[row] }
                         className="m-0"
                         title={ row.toString() }
+                        label=""
                         onChange={ handleChecked }
                       />
                     </td>
@@ -201,7 +205,7 @@ export default React.memo<TableProps>(function Table({
                             }
                             if (value === true) {
                               return (
-                                <svg className="w-6 h-6 text-green-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <svg className="w-6 h-6 mx-auto text-green-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                   <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 11.917 9.724 16.5 19 7.5"/>
                                 </svg>
                               )
@@ -213,21 +217,25 @@ export default React.memo<TableProps>(function Table({
                                 </svg>
                               )
                             }
-                            if (alignNum && typeof value === "number") {
+                            if (typeof value === "number") {
                               return (
-                                <p className="text-right">
+                                <p className={ cn(
+                                  (alignNumber === "left") && "text-left",
+                                  (alignNumber === "center") && "text-center",
+                                  (alignNumber === "right") && "text-right",
+                                ) }>
                                   { value }
                                 </p>
                               )
                             }
                             if (linkable && (typeof value === "string") && (value.startsWith("http://") || value.startsWith("https://"))) {
                               return (
-                                <a className="text-blue-600 hover:text-blue-800 hover:underline" href={ value } target="_blank">
+                                <a className="text-blue-600 hover:text-blue-800 hover:underline" href={ value } title={ value } target="_blank">
                                   {
                                     (() => {
                                       if (linkIcon) {
                                         return (
-                                          <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                          <svg className="w-6 h-6 mx-auto" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                             <path fillRule="evenodd" d="M8 5a1 1 0 0 1 1-1h11a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1a1 1 0 1 1 0-2h1V6H9a1 1 0 0 1-1-1Z" clipRule="evenodd"/>
                                             <path fillRule="evenodd" d="M4 7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H4Zm0 11v-5.5h11V18H4Z" clipRule="evenodd"/>
                                           </svg>
@@ -252,6 +260,7 @@ export default React.memo<TableProps>(function Table({
                       <IconButton
                         className="m-0 p-1"
                         title={ row.toString() }
+                        color="light"
                         label="edit"
                         onClick={ handleCommand }
                       />

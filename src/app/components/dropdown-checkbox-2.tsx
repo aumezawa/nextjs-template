@@ -1,33 +1,41 @@
 "use client"
 import React, { useCallback, useRef, useState } from "react"
+import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
+import Checkbox from "@/app/components/checkbox"
+import ToggleButton from "@/app/components/toggle-button"
 
-type DropdownChechbox2Props = {
-  id: string,
+
+type DropdownCheckbox2Props = {
+  id?: string,
   className?: string,
   title?: string,
-  label?: string,
-  options?: string[],
   type?: "checkbox" | "toggle",
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
+  color?: "blue" | "green",
+  label?: string,
+  options?: string[],
   disabled?: boolean,
   defaultValues?: boolean[],
+  disabledValues?: boolean[],
   reverse?: boolean,
   validate?: (values: boolean[]) => boolean,
-  onChange?: (values: boolean[], valid: boolean) => void,
+  onChange?: (values: boolean[], valid: boolean, title: string) => void,
 }
 
-export default React.memo(React.forwardRef<HTMLButtonElement, DropdownChechbox2Props>(function DropdownChechbox2({
-  id = "",
+export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2Props>(function DropdownCheckbox2({
+  id = uuid(),
   className = "",
   title = "",
-  label = "undefined",
-  options = [],
   type = "checkbox",
   size = "auto",
+  color = "blue",
+  label = "undefined",
+  options = [],
   disabled = false,
   defaultValues = [],
+  disabledValues = [],
   reverse = false,
   validate = undefined,
   onChange = undefined,
@@ -56,62 +64,69 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownChechbox2P
     values: defaultValues,
   })
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    data.current.values[Number(e.currentTarget.title)] = e.currentTarget.checked
+  const handleChange = useCallback((value: boolean, index: string) => {
+    data.current.values[Number(index)] = value
     data.current.display = updateDisplay(data.current.values)
     const valid = validateValue(data.current.values)
     if (onChange) {
-      onChange(data.current.values, valid)
+      onChange(data.current.values, valid, title)
     }
     setValid(valid)
     setDisplay(!display)
-  }, [display, onChange, validateValue, updateDisplay])
+  }, [display, title, onChange, validateValue, updateDisplay])
 
   return (
     <div className={ cn(
       "mb-2",
-      (size === "xs") && "max-w-xs w-full mx-auto",
-      (size === "sm") && "max-w-sm w-full mx-auto",
-      (size === "md") && "max-w-md w-full mx-auto",
-      (size === "lg") && "max-w-lg w-full mx-auto",
-      (size === "xl") && "max-w-xl w-full mx-auto",
-      (size === "full") && "w-full px-2",
+      (size !== "auto") && "w-full",
+      (size === "xs") && "max-w-xs mx-auto",
+      (size === "sm") && "max-w-sm mx-auto",
+      (size === "md") && "max-w-md mx-auto",
+      (size === "lg") && "max-w-lg mx-auto",
+      (size === "xl") && "max-w-xl mx-auto",
       className,
     ) }>
-      <p
-        className={ cn(
-          "origin-[0] scale-75 text-sm font-medium cursor-default",
-          (valid) && "text-green-500",
-          (!valid) && "text-red-500",
-          (!validate) && "text-gray-700",
-          (disabled) && "text-gray-400",
-        ) }
-      >
-        { label }
-      </p>
-      <button
-        ref={ ref }
-        className={ cn(
-          "flex flex-row items-center w-full text-sm border-0 border-b-2 cursor-default focus:outline-none focus:ring-0",
-          "text-gray-900 border-gray-700 focus:border-gray-700",
-          (valid) && "text-green-700 border-green-500 focus:border-green-500",
-          (!valid) && "text-red-700 border-red-500 focus:border-red-500",
-          (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
-          (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
-        ) }
-        title={ title }
-        disabled={ disabled }
-        data-dropdown-toggle={ id }
-      >
-        <p className="flex-grow pt-0.5 pb-2.5 text-left">
-          { data.current.display }
-        </p>
-        <svg className="w-2.5 h-2.5 ms-3 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
-        </svg>
-      </button>
-
-      <div id={ id } className="z-10 hidden w-96 bg-white border divide-y divide-gray-100 rounded-lg shadow-sm" suppressHydrationWarning>
+      <div className="flex flex-row">
+        <div className="relative w-full z-0 mt-3 group">
+          <button
+            ref={ ref }
+            id={ id }
+            type="button"
+            className={ cn(
+              "flex flex-row items-center w-full px-0 py-2.5 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
+              "text-gray-900 border-gray-700 focus:border-gray-700",
+              (valid) && "text-green-700 border-green-500 focus:border-green-500",
+              (!valid) && "text-red-700 border-red-500 focus:border-red-500",
+              (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
+              (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
+            ) }
+            disabled={ disabled }
+            data-dropdown-toggle={ `${ id }-dropdown` }
+            suppressHydrationWarning
+          >
+            <p className="flex-grow text-left">
+              { data.current.display }
+            </p>
+            <svg className="w-2.5 h-2.5 mx-3 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4"/>
+            </svg>
+          </button>
+          <label
+            htmlFor={ id }
+            className={ cn(
+              "absolute top-3 -translate-y-6 origin-[0] scale-75 text-sm",
+              (valid) && "text-green-500 peer-focus:text-green-700",
+              (!valid) && "text-red-500 peer-focus:text-red-700",
+              (!validate) && "text-gray-700 peer-focus:text-gray-900",
+              (disabled) && "text-gray-400",
+            ) }
+            suppressHydrationWarning
+          >
+            { label }
+          </label>
+        </div>
+      </div>
+      <div id={ `${ id }-dropdown` } className="z-10 hidden w-96 bg-white border divide-y divide-gray-100 rounded-lg shadow-sm" suppressHydrationWarning>
         <ul className="px-3 py-2 text-sm text-gray-700">
           {
             options.map((option: string, index: number) => {
@@ -120,39 +135,26 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownChechbox2P
                   <div className="flex items-center p-2 rounded-sm hover:bg-gray-100">
                     {
                       (type === "checkbox") &&
-                      <>
-                        <input
-                          id={ `${ id }-${ option }` }
-                          title={ index.toString() }
-                          type="checkbox"
-                          className="w-4 h-4 text-blue-700 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 focus:ring-2"
-                          defaultChecked={ defaultValues[index] }
-                          onChange={ handleChange }
-                        />
-                        <label
-                          htmlFor={ `${ id }-${ option }` }
-                          className="w-full ms-2 text-sm font-medium text-gray-900 rounded-sm"
-                        >
-                          { option }
-                        </label>
-                      </>
+                      <Checkbox
+                        className="m-0"
+                        title={ index.toString() }
+                        label={ option }
+                        disabled={ disabledValues[index] }
+                        defaultChecked={ defaultValues[index] }
+                        onChange={ handleChange }
+                      />
                     }
                     {
                       (type === "toggle") &&
-                      <label className="inline-flex items-center w-full cursor-pointer">
-                        <input
-                          title={ index.toString() }
-                          type="checkbox"
-                          className="sr-only peer"
-                          defaultChecked={ defaultValues[index] }
-                          onChange={ handleChange }
-                        />
-                        <div className="relative w-9 h-5 rounded-full bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 peer peer-checked:after:translate-x-full rtl:peer-checked:after:translate-x-[-100%] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600">
-                        </div>
-                        <span className="ms-3 text-sm font-medium text-gray-900">
-                          { option }
-                        </span>
-                      </label>
+                      <ToggleButton
+                        className="m-0"
+                        title={ index.toString() }
+                        color={ color }
+                        label={ option }
+                        disabled={ disabledValues[index] }
+                        defaultChecked={ defaultValues[index] }
+                        onChange={ handleChange }
+                      />
                     }
                   </div>
                 </li>

@@ -1,9 +1,10 @@
 import React from "react"
+import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
 
 type ModalFrameProps = {
-  id: string,
+  id?: string,
   size?: "sm" | "md" | "lg" | "xl",
   cols?: "1" | "2",
   closable?: boolean,
@@ -14,7 +15,7 @@ type ModalFrameProps = {
 }
 
 export default React.memo<ModalFrameProps>(function ModalFrame({
-  id,
+  id = uuid(),
   size = "md",
   cols = "1",
   closable = true,
