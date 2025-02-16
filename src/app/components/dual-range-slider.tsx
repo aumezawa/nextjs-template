@@ -261,7 +261,7 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
       className,
     ) }>
       <label
-        htmlFor={ id }
+        htmlFor={ `${ id }-low` }
         className={ cn(
           "block mb-4 text-sm font-medium text-gray-900",
           (disabled) && "text-gray-400",

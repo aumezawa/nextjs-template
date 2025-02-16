@@ -117,6 +117,7 @@ export default React.memo<TableProps>(function Table({
               </th>
             }
             {
+              // filter cols
               data.labels
               .filter((label: string) => (filterCol(label)))
               .map((label: string, index: number) => (
@@ -174,7 +175,8 @@ export default React.memo<TableProps>(function Table({
             return (
               <tbody key={ row }>
                 <tr className={ cn(
-                  "text-nowrap bg-white hover:bg-gray-100 border-b",
+                  "text-nowrap border-b",
+                  (type === "none") && "bg-white hover:bg-gray-100",
                   (type === "none" && (checked.includes(row.toString()))) && "bg-blue-100 hover:bg-blue-200",
                   (type === "info") && "bg-green-100 hover:bg-green-200",
                   (type === "info" && (checked.includes(row.toString()))) && "bg-green-200 hover:bg-green-300",
@@ -198,12 +200,14 @@ export default React.memo<TableProps>(function Table({
                     </td>
                   }
                   {
+                    // filter cols
                     data.labels
                     .filter((label: string) => (filterCol(label)))
                     .map((label: string, col: number) => (
                       <td key={ col } scope="col" className="px-6 py-3">
                         {
                           (() => {
+                            // replace value
                             const value = replaceValue(content[label], label, row)
                             if (value === undefined) {
                               return ""
@@ -217,7 +221,7 @@ export default React.memo<TableProps>(function Table({
                             }
                             if (value === false) {
                               return (
-                                <svg className="w-6 h-6 text-red-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <svg className="w-6 h-6 mx-auto text-red-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                   <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14"/>
                                 </svg>
                               )

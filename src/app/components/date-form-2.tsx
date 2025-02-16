@@ -36,8 +36,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
       "datetime-local": /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$/,
     }
     let valid = !!value.match(patterns[type])
-    if (validate) {
-      valid = (valid && validate(value))
+    if (valid) {
+      if (validate) {
+        valid = (valid && validate(value))
+      }
     }
     return valid
   }, [type, validate])

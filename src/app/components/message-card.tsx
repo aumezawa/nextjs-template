@@ -218,7 +218,7 @@ export default React.memo<MessageCardProps>(function MessageCard({
           <textarea
             ref={ refs.current.textarea }
             className={ cn(
-              "hidden absolute top-0 left-0 z-50 w-full h-full px-0 py-1 text-sm font-normal border-0 resize-none focus:outline-0 hover:cursor-text",
+              "hidden absolute top-0 left-0 z-50 w-full h-full px-0 py-1 text-sm text-gray-900 font-normal border-0 resize-none focus:outline-0 hover:cursor-text",
               (edit) && "block bg-white ring-2",
             ) }
             rows={ 1 }

@@ -64,6 +64,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
 }, ref) {
   const [display, setDisplay] = useState(false)
 
+    const refs = useRef({
+      bar: React.createRef<HTMLDivElement>(),
+    })
+
   const validateUserInput = useCallback(() => {
     let tmpType = "number"
     let tmpStartNum = 0
@@ -160,6 +164,14 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
 
   const data = useRef<RangeSliderParams>(validateUserInput())
 
+  const calcBarLeft = useCallback(() => {
+    return 0
+  }, [])
+
+  const calcBarWidth = useCallback(() => {
+    return (data.current.value - data.current.start) / (data.current.end - data.current.start) * 100
+  }, [])
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     data.current.value = Number(e.currentTarget.value)
     if (onChange) {
@@ -177,7 +189,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
 
   return (
     <div className={ cn(
-      "mb-2",
+      "relative mb-2",
       (size !== "auto") && "w-full",
       (size === "xs") && "max-w-xs mx-auto",
       (size === "sm") && "max-w-sm mx-auto",
@@ -196,11 +208,22 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
       >
         { replace(label, data.current.type, data.current.value) }
       </label>
+      <div className="w-full h-2 mb-2 bg-gray-200 rounded-lg">
+      </div>
+      <div
+        ref={ refs.current.bar }
+        className="absolute top-9 h-2 z-10 bg-green-300 rounded-lg"
+        style={ {
+          left: calcBarLeft().toString() + "%",
+          width: calcBarWidth().toString() + "%",
+        } }
+      >
+      </div>
       <input
         ref={ ref }
         id={ id }
         type="range"
-        className="block w-full h-2 mb-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        className="absolute top-10 left-0 w-full h-0 z-20 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
         disabled={ disabled }
         min={ data.current.start.toString() }
         max={ data.current.end.toString() }

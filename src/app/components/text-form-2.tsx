@@ -100,7 +100,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
           </label>
         </div>
         {
-          button &&
+          (button !== "none") &&
           <button
             className={ cn(
               "mt-5 px-3 text-gray-900 bg-transparent border-0 border-b-2",

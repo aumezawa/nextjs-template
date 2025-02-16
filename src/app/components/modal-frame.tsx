@@ -6,7 +6,7 @@ import { cn } from "@/app/libs/utils"
 type ModalFrameProps = {
   id?: string,
   size?: "sm" | "md" | "lg" | "xl",
-  cols?: "1" | "2",
+  cols?: "1" | "2" | "3" | "4",
   closable?: boolean,
   title?: string,
   head?: React.JSX.Element,
@@ -68,6 +68,8 @@ export default React.memo<ModalFrameProps>(function ModalFrame({
             "max-h-[70dvh] overflow-y-auto p-4",
             (cols === "1") && "flex flex-col",
             (cols === "2") && "grid grid-cols-2 items-center gap-x-2 gap-y-4",
+            (cols === "3") && "grid grid-cols-3 items-center gap-x-2 gap-y-4",
+            (cols === "4") && "grid grid-cols-4 items-center gap-x-2 gap-y-4",
           ) }>
             { body }
           </div>

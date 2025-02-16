@@ -73,9 +73,9 @@ export default React.memo<BarChartProps>(function BarChart({
     <div
       className={ cn(
         "flex flex-col w-full px-2 pt-4 bg-white rounded-lg border shadow-sm",
-        (size === "md") && "max-w-md",
-        (size === "lg") && "max-w-lg",
-        (size === "xl") && "max-w-xl",
+        (size === "md") && "max-w-md mx-auto",
+        (size === "lg") && "max-w-lg mx-auto",
+        (size === "xl") && "max-w-xl mx-auto",
         className,
       ) }
     >

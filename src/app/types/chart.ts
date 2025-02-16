@@ -37,12 +37,14 @@ export const BarChartSampleData: BarChartFormat = {
 /* Pie Chart */
 export type PieChartFormat = {
   label: string,
+  unit: string,
   labels: string[],
   series: number[],
 }
 
 export const PieChartSampleData: PieChartFormat = {
-  label: "Revenue [$]",
+  label: "Revenue",
+  unit: "$",
   labels: ["Product A", "Product B", "Product C", "Product D"],
   series: [200, 500, 400, 100],
 }
