@@ -13,6 +13,7 @@ type DateForm2Props = {
   label?: string,
   disabled?: boolean,
   defaultValue?: string,
+  fixed?: boolean,
   validate?: (value: string) => boolean,
   onChange?: (value: string, valid: boolean, title: string) => void,
 }
@@ -26,6 +27,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
   label = "undefined",
   disabled = false,
   defaultValue = new Date().toISOString().slice(0,16),
+  fixed = false,
   validate = undefined,
   onChange = undefined,
 }, ref) {
@@ -67,6 +69,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
     ) }>
       <div className="relative w-full z-0 mt-3 group">
         <input
+          key={ `${ id }-key-${ String(defaultValue) }` }
           ref={ ref }
           id={ id }
           type={ type }
@@ -76,9 +79,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
             (!valid) && "text-red-700 border-red-500 focus:border-red-500",
             (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
             (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
+            (fixed) && "text-gray-900 border-gray-700 cursor-default",
           ) }
           placeholder=""
-          disabled={ disabled }
+          disabled={ disabled || fixed }
           defaultValue={ valid ? defaultValue : "" }
           onChange={ handleChange }
           suppressHydrationWarning
@@ -91,6 +95,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
             (!valid) && "text-red-500 peer-focus:text-red-700",
             (!validate) && "text-gray-700 peer-focus:text-gray-900",
             (disabled) && "text-gray-400",
+            (fixed) && "text-gray-700",
           ) }
           suppressHydrationWarning
         >

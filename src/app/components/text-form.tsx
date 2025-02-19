@@ -14,6 +14,7 @@ type TextFormProps = {
   disabled?: boolean,
   placeholder?: string,
   defaultValue?: string,
+  fixed?: boolean,
   validate?: (value: string) => boolean,
   onChange?: (value: string, valid: boolean, title: string) => void,
   onSubmit?: () => void,
@@ -29,6 +30,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
   disabled = false,
   placeholder = "Input",
   defaultValue = "",
+  fixed = false,
   validate = undefined,
   onChange = undefined,
   onSubmit = undefined,
@@ -76,12 +78,14 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
           (!valid) && "text-red-500",
           (!validate) && "text-gray-700",
           (disabled) && "text-gray-400",
+          (fixed) && "text-gray-700",
         ) }>
           { label }
         </p>
       }
       <div className="flex flex-row">
         <input
+          key={ `${ id }-key-${ String(defaultValue) }` }
           ref={ ref }
           id={ id }
           type="text"
@@ -91,16 +95,17 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
             (!valid) && "text-red-900 bg-red-50 border-red-700",
             (!validate) && "text-gray-900 bg-gray-50 border-gray-700",
             (disabled) && "text-gray-400 bg-gray-200 border-gray-400 cursor-not-allowed",
-            (button !== "none") && "rounded-e-none",
+            (fixed) && "text-gray-900 bg-gray-50 border-gray-700 cursor-default",
+            (button !== "none" && !fixed) && "rounded-e-none",
           ) }
-          disabled={ disabled }
+          disabled={ disabled || fixed }
           placeholder={ placeholder }
           defaultValue={ defaultValue }
           onChange={ handleChange }
           suppressHydrationWarning
         />
         {
-          (button !== "none") &&
+          (button !== "none" && !fixed) &&
           <button
             className={ cn(
               "px-3 text-white rounded-e-lg border",

@@ -11,6 +11,7 @@ type CheckboxProps = {
   label?: string,
   disabled?: boolean,
   defaultChecked?: boolean,
+  fixed?: boolean,
   onChange?: (value: boolean, title: string) => void,
 }
 
@@ -22,6 +23,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
   label = "undefined",
   disabled = false,
   defaultChecked = false,
+  fixed = false,
   onChange = undefined,
 }, ref) {
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,14 +44,16 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
       className,
     ) }>
       <input
+        key={ `${ id }-key-${ String(defaultChecked) }` }
         ref={ ref }
         id={ id }
         type="checkbox"
         className={ cn(
           "w-4 h-4 text-blue-700 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 focus:ring-2",
           (disabled) && "text-blue-400 border-gray-300 cursor-not-allowed",
+          (fixed) && "text-blue-700 border-gray-100 cursor-default",
         ) }
-        disabled={ disabled }
+        disabled={ disabled || fixed }
         defaultChecked={ defaultChecked }
         onChange={ handleChange }
         suppressHydrationWarning
@@ -61,6 +65,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
           className={ cn(
             "text-sm font-medium text-gray-900 whitespace-nowrap cursor-pointer",
             (disabled) && "text-gray-400 cursor-not-allowed",
+            (fixed) && "text-gray-900 cursor-default",
           ) }
           suppressHydrationWarning
         >

@@ -10,6 +10,8 @@ import type { TableFormat, TableContent } from "@/app/types/table"
 type TableProps = {
   className?: string,
   data?: TableFormat,
+  label?: string,
+  sticky?: 0 | 1,
   checkable?: boolean,
   commandable?: boolean,
   linkable?: boolean,
@@ -28,6 +30,8 @@ type TableProps = {
 export default React.memo<TableProps>(function Table({
   className = "",
   data = { title: "untitled", labels: ["unlabeled"], contents: [{ unlabeled: "no data" }] },
+  sticky = 0,
+  label = "",
   checkable = false,
   commandable = false,
   linkable = false,
@@ -54,7 +58,7 @@ export default React.memo<TableProps>(function Table({
 
     if (title === "header") {
       if (value) {
-        updated = refs.current.body.map((_: React.RefObject<HTMLInputElement | null>, index: number) => index.toString())
+        updated = refs.current.body.map((_: React.RefObject<HTMLInputElement | null>, index: number) => String(index))
       } else {
         updated = []
       }
@@ -96,16 +100,16 @@ export default React.memo<TableProps>(function Table({
       className,
     ) }
     >
-      <table className="w-full text-sm text-left text-gray-600">
+      <table className="w-full text-sm text-left text-nowrap text-gray-600">
         <thead className={ cn(
-          "sticky top-0 z-10 text-xs uppercase text-nowrap text-gray-800 bg-gray-100",
+          "sticky top-0 z-10 text-xs uppercase text-gray-800 bg-gray-100",
           (alignLabel === "left") && "text-left",
           (alignLabel === "center") && "text-center",
           (alignLabel === "right") && "text-right",
         ) }>
           <tr>
             {
-              checkable &&
+              checkable && !sticky &&
               <th scope="col" className="sticky left-0 z-0 px-3 py-3 bg-gray-100">
                 <Chackbox
                   ref={ refs.current.head }
@@ -117,11 +121,24 @@ export default React.memo<TableProps>(function Table({
               </th>
             }
             {
-              // filter cols
+              // sticky col
               data.labels
               .filter((label: string) => (filterCol(label)))
+              .slice(0, sticky)
               .map((label: string, index: number) => (
-                <th key={ index } scope="col" className="px-6 py-3">
+                <th key={ index } scope="col" className="sticky left-0 z-0 px-6 py-3 bg-gray-100">
+                  { replaceLabel(label) }
+                </th>
+              ))
+            }
+            {
+              // non-sticky cols
+              data.labels
+              // filter cols
+              .filter((label: string) => (filterCol(label)))
+              .slice(sticky)
+              .map((label: string, index: number) => (
+                <th key={ index + sticky } scope="col" className="px-6 py-3">
                   { replaceLabel(label) }
                 </th>
               ))
@@ -174,37 +191,54 @@ export default React.memo<TableProps>(function Table({
 
             return (
               <tbody key={ row }>
-                <tr className={ cn(
-                  "text-nowrap border-b",
-                  (type === "none") && "bg-white hover:bg-gray-100",
-                  (type === "none" && (checked.includes(row.toString()))) && "bg-blue-100 hover:bg-blue-200",
-                  (type === "info") && "bg-green-100 hover:bg-green-200",
-                  (type === "info" && (checked.includes(row.toString()))) && "bg-green-200 hover:bg-green-300",
-                  (type === "warning") && "bg-yellow-100 hover:bg-yellow-200",
-                  (type === "warning" && (checked.includes(row.toString()))) && "bg-yellow-200 hover:bg-yellow-300",
-                  (type === "error") && "bg-red-100 hover:bg-red-200",
-                  (type === "error" && (checked.includes(row.toString()))) && "bg-red-200 hover:bg-red-300",
-                  (type === "blind") && "bg-gray-300 hover:bg-gray-400",
-                  (type === "blind" && (checked.includes(row.toString()))) && "bg-gray-400 hover:bg-gray-500",
-                ) }>
+                <tr
+                  className={ cn(
+                    "text-nowrap border-b",
+                    (type === "none") && "bg-white hover:bg-gray-100",
+                    (type === "none" && (checked.includes(String(row)))) && "bg-blue-100 hover:bg-blue-200",
+                    (type === "info") && "bg-green-100 hover:bg-green-200",
+                    (type === "info" && (checked.includes(String(row)))) && "bg-green-200 hover:bg-green-300",
+                    (type === "warning") && "bg-yellow-100 hover:bg-yellow-200",
+                    (type === "warning" && (checked.includes(String(row)))) && "bg-yellow-200 hover:bg-yellow-300",
+                    (type === "error") && "bg-red-100 hover:bg-red-200",
+                    (type === "error" && (checked.includes(String(row)))) && "bg-red-200 hover:bg-red-300",
+                    (type === "blind") && "bg-gray-300 hover:bg-gray-400",
+                    (type === "blind" && (checked.includes(String(row)))) && "bg-gray-400 hover:bg-gray-500",
+                  ) }
+                  title={ String(data.contents[row][label]) }
+                >
                   {
-                    checkable &&
+                    checkable && !sticky &&
                     <td className="sticky left-0 z-0 px-3 py-3">
                       <Chackbox
                         ref={ refs.current.body[row] }
                         className="m-0"
-                        title={ row.toString() }
+                        title={ String(row) }
                         label=""
                         onChange={ handleChecked }
                       />
                     </td>
                   }
                   {
-                    // filter cols
+                    // sticky cols
                     data.labels
+                    // filter cols
                     .filter((label: string) => (filterCol(label)))
+                    .slice(0, sticky)
                     .map((label: string, col: number) => (
-                      <td key={ col } scope="col" className="px-6 py-3">
+                      <td key={ col } scope="col" className="sticky left-0 z-0 px-6 py-3 bg-gray-100">
+                        { content[label] }
+                      </td>
+                    ))
+                  }
+                  {
+                    // non-sticky cols
+                    data.labels
+                    // filter cols
+                    .filter((label: string) => (filterCol(label)))
+                    .slice(sticky)
+                    .map((label: string, col: number) => (
+                      <td key={ col + sticky } scope="col" className="px-6 py-3">
                         {
                           (() => {
                             // replace value
@@ -268,7 +302,7 @@ export default React.memo<TableProps>(function Table({
                     <td className="sticky right-0 z-0 px-2 py-2">
                       <IconButton
                         className="m-0 p-1"
-                        title={ row.toString() }
+                        title={ String(row) }
                         color="light"
                         label="edit"
                         onClick={ handleCommand }

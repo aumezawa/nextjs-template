@@ -106,7 +106,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
           date.setTime(value * 86400000 + offset)
           return date.toISOString().slice(5, 10).replace("-", "/")
         } else {
-          return value.toString()
+          return String(value)
         }
       }
       return defaultLabel
@@ -225,10 +225,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
         type="range"
         className="absolute top-10 left-0 w-full h-0 z-20 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
         disabled={ disabled }
-        min={ data.current.start.toString() }
-        max={ data.current.end.toString() }
-        step={ step.toString() }
-        defaultValue={ data.current.value.toString() }
+        min={ String(data.current.start) }
+        max={ String(data.current.end) }
+        step={ String(step) }
+        defaultValue={ String(data.current.value) }
         onChange={ handleChange }
         suppressHydrationWarning
       />

@@ -14,6 +14,7 @@ type SelectFormProps = {
   disabled?: boolean,
   placeholder?: string,
   defaultIndex?: number,
+  fixed?: boolean,
   validate?: (value: string, index: number) => boolean,
   onChange?: (value: string, index: number, valid: boolean, title: string) => void,
 }
@@ -28,6 +29,7 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
   disabled = false,
   placeholder = "Choose an option",
   defaultIndex = -1,
+  fixed = false,
   validate = undefined,
   onChange = undefined,
 }, ref) {
@@ -69,11 +71,13 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
           (!valid) && "text-red-500",
           (!validate) && "text-gray-700",
           (disabled) && "text-gray-400",
+          (fixed) && "text-gray-700",
         ) }>
           { label }
         </p>
       }
       <select
+        key={ `${ id }-key-${ String(defaultIndex) }` }
         ref={ ref }
         id={ id }
         className={ cn (
@@ -82,9 +86,10 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
           (!valid) && "text-red-900 bg-red-50 border-red-700",
           (!validate) && "text-gray-900 bg-gray-50 border-gray-700",
           (disabled) && "text-gray-400 bg-gray-200 border-gray-400 cursor-not-allowed",
+          (fixed) && "text-gray-900 bg-gray-50 border-gray-700 cursor-default",
         ) }
-        disabled={ disabled }
-        defaultValue={ defaultIndex.toString() }
+        disabled={ disabled || fixed }
+        defaultValue={ String(defaultIndex) }
         onChange={ handleChange }
         suppressHydrationWarning
       >
@@ -93,7 +98,7 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
         </option>
         {
           options.map((option: string, index: number) => (
-            <option key={ index } className="text-gray-900" value={ index.toString() }>
+            <option key={ index } className="text-gray-900" value={ String(index) }>
               { option }
             </option>
           ))

@@ -114,7 +114,7 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
           date.setTime(value * 86400000 + offset)
           return date.toISOString().slice(5, 10).replace("-", "/")
         } else {
-          return value.toString()
+          return String(value)
         }
       }
       return defaultLabel
@@ -207,7 +207,7 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
       }
     } else {
       if (refs.current.low.current) {
-        refs.current.low.current.value = data.current.highValue.toString()
+        refs.current.low.current.value = String(data.current.highValue)
       }
     }
     if (refs.current.low.current && refs.current.high.current && refs.current.bar.current) {
@@ -237,7 +237,7 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
       }
     } else {
       if (refs.current.high.current) {
-        refs.current.high.current.value = data.current.lowValue.toString()
+        refs.current.high.current.value = String(data.current.lowValue)
       }
     }
     if (refs.current.low.current && refs.current.high.current && refs.current.bar.current) {
@@ -287,10 +287,10 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
         type="range"
         className="absolute top-10 left-0 w-full h-0 z-20 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
         disabled={ disabled }
-        min={ data.current.start.toString() }
-        max={ data.current.end.toString() }
-        step={ step.toString() }
-        defaultValue={ data.current.lowValue.toString() }
+        min={ String(data.current.start) }
+        max={ String(data.current.end) }
+        step={ String(step) }
+        defaultValue={ String(data.current.lowValue) }
         onChange={ handleChangeLow }
         suppressHydrationWarning
       />
@@ -300,10 +300,10 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
         type="range"
         className="absolute top-10 left-0 w-full h-0 z-30 accent-purple-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
         disabled={ disabled }
-        min={ data.current.start.toString() }
-        max={ data.current.end.toString() }
-        step={ step.toString() }
-        defaultValue={ data.current.highValue.toString() }
+        min={ String(data.current.start) }
+        max={ String(data.current.end) }
+        step={ String(step) }
+        defaultValue={ String(data.current.highValue) }
         onChange={ handleChangeHigh }
         suppressHydrationWarning
       />

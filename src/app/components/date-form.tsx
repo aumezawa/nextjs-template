@@ -13,6 +13,7 @@ type DateFormProps = {
   label?: string,
   disabled?: boolean,
   defaultValue?: string,
+  fixed?: boolean,
   validate?: (value: string) => boolean,
   onChange?: (value: string, valid: boolean, title: string) => void,
 }
@@ -26,6 +27,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
   label = "undefined",
   disabled = false,
   defaultValue = new Date().toISOString().slice(0,16),
+  fixed = false,
   validate = undefined,
   onChange = undefined,
 }, ref) {
@@ -73,11 +75,13 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
           (!valid) && "text-red-500",
           (!validate) && "text-gray-700",
           (disabled) && "text-gray-400",
+          (fixed) && "text-gray-700",
         ) }>
           { label }
         </p>
       }
       <input
+        key={ `${ id }-key-${ String(defaultValue) }` }
         ref={ ref }
         id={ id }
         type={ type }
@@ -87,8 +91,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
           (!valid) && "text-red-900 bg-red-50 border-red-700",
           (!validate) && "text-gray-900 bg-gray-50 border-gray-700",
           (disabled) && "text-gray-400 bg-gray-200 border-gray-400 cursor-not-allowed",
+          (fixed) && "text-gray-900 bg-gray-50 border-gray-700 cursor-default",
         ) }
-        disabled={ disabled }
+        disabled={ disabled || fixed }
         defaultValue={ valid ? defaultValue : "" }
         onChange={ handleChange }
         suppressHydrationWarning

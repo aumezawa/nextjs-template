@@ -126,7 +126,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
           </label>
         </div>
       </div>
-      <div id={ `${ id }-dropdown` } className="z-10 hidden w-96 bg-white border divide-y divide-gray-100 rounded-lg shadow-sm" suppressHydrationWarning>
+      <div id={ `${ id }-dropdown` } className="z-20 hidden w-96 bg-white border divide-y divide-gray-100 rounded-lg shadow-sm" suppressHydrationWarning>
         <ul className="px-3 py-2 text-sm text-gray-700">
           {
             options.map((option: string, index: number) => {
@@ -137,7 +137,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
                       (type === "checkbox") &&
                       <Checkbox
                         className="m-0"
-                        title={ index.toString() }
+                        title={ String(index) }
                         label={ option }
                         disabled={ disabledValues[index] }
                         defaultChecked={ defaultValues[index] }
@@ -148,7 +148,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
                       (type === "toggle") &&
                       <ToggleButton
                         className="m-0"
-                        title={ index.toString() }
+                        title={ String(index) }
                         color={ color }
                         label={ option }
                         disabled={ disabledValues[index] }

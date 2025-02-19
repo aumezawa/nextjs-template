@@ -13,6 +13,7 @@ type TextForm2Props = {
   button?: "none" | "search" | "download" | "upload" | "message",
   disabled?: boolean,
   defaultValue?: string,
+  fixed?: boolean,
   validate?: (value: string) => boolean,
   onChange?: (value: string, valid: boolean, title: string) => void,
   onSubmit?: () => void,
@@ -27,6 +28,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
   button = "none",
   disabled = false,
   defaultValue = "",
+  fixed = false,
   validate = undefined,
   onChange = undefined,
   onSubmit = undefined,
@@ -69,6 +71,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
       <div className="flex flex-row">
         <div className="relative w-full z-0 mt-3 group">
           <input
+            key={ `${ id }-key-${ String(defaultValue) }` }
             ref={ ref }
             id={ id }
             type="text"
@@ -78,9 +81,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
               (!valid) && "text-red-700 border-red-500 focus:border-red-500",
               (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
               (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
+              (fixed) && "text-gray-900 border-gray-700 cursor-default",
             ) }
             placeholder=""
-            disabled={ disabled }
+            disabled={ disabled || fixed }
             defaultValue={ defaultValue }
             onChange={ handleChange }
             suppressHydrationWarning
@@ -93,6 +97,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
               (!valid) && "text-red-500 peer-focus:text-red-700",
               (!validate) && "text-gray-700 peer-focus:text-gray-900",
               (disabled) && "text-gray-400",
+              (fixed) && "text-gray-700",
               ) }
             suppressHydrationWarning
           >
@@ -100,7 +105,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
           </label>
         </div>
         {
-          (button !== "none") &&
+          (button !== "none" && !fixed) &&
           <button
             className={ cn(
               "mt-5 px-3 text-gray-900 bg-transparent border-0 border-b-2",
@@ -109,7 +114,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
               (!validate) && "border-gray-700 hover:text-blue-500 focus:text-blue-700",
               (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
             ) }
-            disabled={ disabled || !valid }
+            disabled={ disabled || fixed || !valid }
             onClick={ handleSubmit }
           >
             {
