@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useRef } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -15,7 +15,7 @@ type ModalFrameProps = {
 }
 
 export default React.memo<ModalFrameProps>(function ModalFrame({
-  id = uuid(),
+  id = "",
   size = "md",
   cols = "1",
   closable = true,
@@ -24,9 +24,13 @@ export default React.memo<ModalFrameProps>(function ModalFrame({
   body = <></>,
   foot = <></>,
 }){
+  const data = useRef({
+    id: id || uuid(),
+  })
+
   return (
     <div
-      id={ id }
+      id={ data.current.id }
       className="hidden justify-center items-center w-full overflow-x-hidden overflow-y-hidden fixed inset-0 top-0 left-0 right-0 z-50 bg-gray-500 bg-opacity-70"
       data-modal-backdrop="static"
       data-modal-placement="top-center"
@@ -51,7 +55,7 @@ export default React.memo<ModalFrameProps>(function ModalFrame({
                 (closable) &&
                 <button
                   className="inline-flex justify-center items-center w-8 h-8 ms-auto text-sm text-gray-400 bg-transparent hover:text-gray-900 hover:bg-gray-200 rounded-lg"
-                  data-modal-hide={ id }
+                  data-modal-hide={ data.current.id }
                 >
                   <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>

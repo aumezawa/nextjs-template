@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -20,7 +20,7 @@ type TextForm2Props = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(function TextForm2({
-  id = uuid(),
+  id = "",
   className = "",
   title = "",
   size = "auto",
@@ -42,6 +42,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
   }, [validate])
 
   const [valid, setValid] = useState(validateValue(defaultValue))
+
+  const data = useRef({
+    id: id || uuid(),
+  })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const valid = validateValue(e.currentTarget.value)
@@ -71,9 +75,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
       <div className="flex flex-row">
         <div className="relative w-full z-0 mt-3 group">
           <input
-            key={ `${ id }-key-${ String(defaultValue) }` }
+            key={ `${ data.current.id }-key-${ String(defaultValue) }` }
             ref={ ref }
-            id={ id }
+            id={ data.current.id }
             type="text"
             className={ cn(
               "block w-full py-2.5 px-0 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
@@ -90,7 +94,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextForm2Props>(fun
             suppressHydrationWarning
           />
           <label
-            htmlFor={ id }
+            htmlFor={ data.current.id }
             className={ cn(
               "absolute transform duration-300 top-3 -translate-y-6 origin-[0] scale-75 text-sm peer-focus:start-0 peer-focus:-translate-y-6 peer-focus:font-medium peer-focus:scale-75 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0",
               (valid) && "text-green-500 peer-focus:text-green-700",

@@ -1,17 +1,17 @@
 import React from "react"
-import { v4 as uuid } from "uuid"
+//import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
 
 type TabFrameProps = {
-  id?: string,
+  id: string,
   className?: string,
   labels?: string[],
   contents?: Array<React.JSX.Element>,
 }
 
 export default React.memo<TabFrameProps>(function TabFrame({
-  id = uuid(),
+  id,
   className = "",
   labels = [],
   contents = [],

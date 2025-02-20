@@ -36,7 +36,7 @@ type DualRangeSliderProps = {
 }
 
 export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
-  id = uuid(),
+  id = "",
   className = "",
   type = "number",
   title = "",
@@ -73,6 +73,10 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
     bar: React.createRef<HTMLDivElement>(),
     low: React.createRef<HTMLInputElement>(),
     high: React.createRef<HTMLInputElement>(),
+  })
+
+  const data = useRef({
+    id: id || uuid(),
   })
 
   const validateUserInput = useCallback(() => {
@@ -179,40 +183,40 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
     })
   }, [type, start, end, step, defaultLowValue, defaultHighValue, startLabel, centerLabel, endLabel])
 
-  const data = useRef<DualRangeSliderParams>(validateUserInput())
+  const param = useRef<DualRangeSliderParams>(validateUserInput())
 
   const calcBarLeft = useCallback(() => {
-    return (data.current.lowValue - data.current.start) / (data.current.end - data.current.start) * 100
+    return (param.current.lowValue - param.current.start) / (param.current.end - param.current.start) * 100
   }, [])
 
   const calcBarWidth = useCallback(() => {
-    return (data.current.highValue - data.current.lowValue) / (data.current.end - data.current.start) * 100
+    return (param.current.highValue - param.current.lowValue) / (param.current.end - param.current.start) * 100
   }, [])
 
   const handleChangeLow = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.currentTarget.value)
-    if (value <= data.current.highValue) {
-      data.current.lowValue = value
+    if (value <= param.current.highValue) {
+      param.current.lowValue = value
       if (onChange) {
-        if (data.current.type === "date") {
+        if (param.current.type === "date") {
           const offset = +9 * 60 * 60 * 1000  /* only JST supported */
           const lowDate = new Date()
           const highDate = new Date()
-          lowDate.setTime(data.current.lowValue * 86400000 + offset)
-          highDate.setTime(data.current.highValue * 86400000 + offset)
-          onChange(data.current.type, lowDate.toISOString().slice(5, 10).replace("-", "/"), data.current.lowValue - data.current.start, highDate.toISOString().slice(5, 10).replace("-", "/"), data.current.highValue - data.current.start, title)
+          lowDate.setTime(param.current.lowValue * 86400000 + offset)
+          highDate.setTime(param.current.highValue * 86400000 + offset)
+          onChange(param.current.type, lowDate.toISOString().slice(5, 10).replace("-", "/"), param.current.lowValue - param.current.start, highDate.toISOString().slice(5, 10).replace("-", "/"), param.current.highValue - param.current.start, title)
         } else {
-          onChange(data.current.type, data.current.lowValue, data.current.lowValue - data.current.start, data.current.highValue, data.current.highValue - data.current.start, title)
+          onChange(param.current.type, param.current.lowValue, param.current.lowValue - param.current.start, param.current.highValue, param.current.highValue - param.current.start, title)
         }
       }
     } else {
       if (refs.current.low.current) {
-        refs.current.low.current.value = String(data.current.highValue)
+        refs.current.low.current.value = String(param.current.highValue)
       }
     }
     if (refs.current.low.current && refs.current.high.current && refs.current.bar.current) {
-      refs.current.low.current.style.zIndex = "30"
-      refs.current.high.current.style.zIndex = "20"
+      refs.current.low.current.style.zIndex = "7"
+      refs.current.high.current.style.zIndex = "6"
       refs.current.bar.current.style.left = calcBarLeft().toString() + "%"
       refs.current.bar.current.style.width = calcBarWidth().toString() + "%"
     }
@@ -221,28 +225,28 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
 
   const handleChangeHigh = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.currentTarget.value)
-    if (value >= data.current.lowValue) {
-      data.current.highValue = value
+    if (value >= param.current.lowValue) {
+      param.current.highValue = value
       if (onChange) {
-        if (data.current.type === "date") {
+        if (param.current.type === "date") {
           const offset = +9 * 60 * 60 * 1000  /* only JST supported */
           const lowDate = new Date()
           const highDate = new Date()
-          lowDate.setTime(data.current.lowValue * 86400000 + offset)
-          highDate.setTime(data.current.highValue * 86400000 + offset)
-          onChange(data.current.type, lowDate.toISOString().slice(5, 10).replace("-", "/"), data.current.lowValue - data.current.start, highDate.toISOString().slice(5, 10).replace("-", "/"), data.current.highValue - data.current.start, title)
+          lowDate.setTime(param.current.lowValue * 86400000 + offset)
+          highDate.setTime(param.current.highValue * 86400000 + offset)
+          onChange(param.current.type, lowDate.toISOString().slice(5, 10).replace("-", "/"), param.current.lowValue - param.current.start, highDate.toISOString().slice(5, 10).replace("-", "/"), param.current.highValue - param.current.start, title)
         } else {
-          onChange(data.current.type, data.current.lowValue, data.current.lowValue - data.current.start, data.current.highValue, data.current.highValue - data.current.start, title)
+          onChange(param.current.type, param.current.lowValue, param.current.lowValue - param.current.start, param.current.highValue, param.current.highValue - param.current.start, title)
         }
       }
     } else {
       if (refs.current.high.current) {
-        refs.current.high.current.value = String(data.current.lowValue)
+        refs.current.high.current.value = String(param.current.lowValue)
       }
     }
     if (refs.current.low.current && refs.current.high.current && refs.current.bar.current) {
-      refs.current.low.current.style.zIndex = "20"
-      refs.current.high.current.style.zIndex = "30"
+      refs.current.low.current.style.zIndex = "6"
+      refs.current.high.current.style.zIndex = "7"
       refs.current.bar.current.style.left = calcBarLeft().toString() + "%"
       refs.current.bar.current.style.width = calcBarWidth().toString() + "%"
     }
@@ -261,20 +265,20 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
       className,
     ) }>
       <label
-        htmlFor={ `${ id }-low` }
+        htmlFor={ `${ data.current.id }-low` }
         className={ cn(
           "block mb-4 text-sm font-medium text-gray-900",
           (disabled) && "text-gray-400",
         ) }
         suppressHydrationWarning
       >
-        { replace(label, data.current.type, data.current.lowValue, data.current.highValue) }
+        { replace(label, param.current.type, param.current.lowValue, param.current.highValue) }
       </label>
       <div className="w-full h-2 mb-2 bg-gray-200 rounded-lg">
       </div>
       <div
         ref={ refs.current.bar }
-        className="absolute top-9 h-2 z-10 bg-green-300 rounded-lg"
+        className="absolute top-9 h-2 z-5 bg-green-300 rounded-lg"
         style={ {
           left: calcBarLeft().toString() + "%",
           width: calcBarWidth().toString() + "%",
@@ -283,39 +287,39 @@ export default React.memo<DualRangeSliderProps>(function DualRangeSlider({
       </div>
       <input
         ref={ refs.current.low }
-        id={ `${ id }-low` }
+        id={ `${ data.current.id }-low` }
         type="range"
-        className="absolute top-10 left-0 w-full h-0 z-20 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
+        className="absolute top-10 left-0 w-full h-0 z-6 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
         disabled={ disabled }
-        min={ String(data.current.start) }
-        max={ String(data.current.end) }
+        min={ String(param.current.start) }
+        max={ String(param.current.end) }
         step={ String(step) }
-        defaultValue={ String(data.current.lowValue) }
+        defaultValue={ String(param.current.lowValue) }
         onChange={ handleChangeLow }
         suppressHydrationWarning
       />
       <input
         ref={ refs.current.high }
-        id={ `${ id }-high` }
+        id={ `${ data.current.id }-high` }
         type="range"
-        className="absolute top-10 left-0 w-full h-0 z-30 accent-purple-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
+        className="absolute top-10 left-0 w-full h-0 z-7 accent-purple-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
         disabled={ disabled }
-        min={ String(data.current.start) }
-        max={ String(data.current.end) }
+        min={ String(param.current.start) }
+        max={ String(param.current.end) }
         step={ String(step) }
-        defaultValue={ String(data.current.highValue) }
+        defaultValue={ String(param.current.highValue) }
         onChange={ handleChangeHigh }
         suppressHydrationWarning
       />
       <div className="grid grid-cols-3">
         <span className="text-start text-sm text-gray-500">
-          { data.current.startLabel }
+          { param.current.startLabel }
         </span>
         <span className="text-center text-sm text-gray-500">
-          { data.current.centerLabel }
+          { param.current.centerLabel }
         </span>
         <span className="text-end text-sm text-gray-500">
-          { data.current.endLabel }
+          { param.current.endLabel }
         </span>
       </div>
     </div>

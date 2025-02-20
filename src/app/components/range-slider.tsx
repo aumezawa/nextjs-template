@@ -34,7 +34,7 @@ type RangeSliderProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(function RangeSlider({
-  id = uuid(),
+  id = "",
   className = "",
   type = "number",
   title = "",
@@ -64,9 +64,13 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
 }, ref) {
   const [display, setDisplay] = useState(false)
 
-    const refs = useRef({
-      bar: React.createRef<HTMLDivElement>(),
-    })
+  const refs = useRef({
+    bar: React.createRef<HTMLDivElement>(),
+  })
+
+  const data = useRef({
+    id: id || uuid(),
+  })
 
   const validateUserInput = useCallback(() => {
     let tmpType = "number"
@@ -162,26 +166,26 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
     })
   }, [type, start, end, step, defaultValue, startLabel, centerLabel, endLabel])
 
-  const data = useRef<RangeSliderParams>(validateUserInput())
+  const param = useRef<RangeSliderParams>(validateUserInput())
 
   const calcBarLeft = useCallback(() => {
     return 0
   }, [])
 
   const calcBarWidth = useCallback(() => {
-    return (data.current.value - data.current.start) / (data.current.end - data.current.start) * 100
+    return (param.current.value - param.current.start) / (param.current.end - param.current.start) * 100
   }, [])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    data.current.value = Number(e.currentTarget.value)
+    param.current.value = Number(e.currentTarget.value)
     if (onChange) {
-      if (data.current.type === "date") {
+      if (param.current.type === "date") {
         const offset = +9 * 60 * 60 * 1000  /* only JST supported */
         const date = new Date()
-        date.setTime(data.current.value * 86400000 + offset)
-        onChange(data.current.type, date.toISOString().slice(5, 10).replace("-", "/"), data.current.value - data.current.start, title)
+        date.setTime(param.current.value * 86400000 + offset)
+        onChange(param.current.type, date.toISOString().slice(5, 10).replace("-", "/"), param.current.value - param.current.start, title)
       } else {
-        onChange(data.current.type, data.current.value, data.current.value - data.current.start, title)
+        onChange(param.current.type, param.current.value, param.current.value - param.current.start, title)
       }
     }
     setDisplay(!display)
@@ -199,20 +203,20 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
       className,
     ) }>
       <label
-        htmlFor={ id }
+        htmlFor={ data.current.id }
         className={ cn(
           "block mb-4 text-sm font-medium text-gray-900",
           (disabled) && "text-gray-400",
         ) }
         suppressHydrationWarning
       >
-        { replace(label, data.current.type, data.current.value) }
+        { replace(label, param.current.type, param.current.value) }
       </label>
       <div className="w-full h-2 mb-2 bg-gray-200 rounded-lg">
       </div>
       <div
         ref={ refs.current.bar }
-        className="absolute top-9 h-2 z-10 bg-green-300 rounded-lg"
+        className="absolute top-9 h-2 z-5 bg-green-300 rounded-lg"
         style={ {
           left: calcBarLeft().toString() + "%",
           width: calcBarWidth().toString() + "%",
@@ -221,26 +225,26 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
       </div>
       <input
         ref={ ref }
-        id={ id }
+        id={ data.current.id }
         type="range"
-        className="absolute top-10 left-0 w-full h-0 z-20 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
+        className="absolute top-10 left-0 w-full h-0 z-6 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"
         disabled={ disabled }
-        min={ String(data.current.start) }
-        max={ String(data.current.end) }
+        min={ String(param.current.start) }
+        max={ String(param.current.end) }
         step={ String(step) }
-        defaultValue={ String(data.current.value) }
+        defaultValue={ String(param.current.value) }
         onChange={ handleChange }
         suppressHydrationWarning
       />
       <div className="grid grid-cols-3">
         <span className="text-start text-sm text-gray-500">
-          { data.current.startLabel }
+          { param.current.startLabel }
         </span>
         <span className="text-center text-sm text-gray-500">
-          { data.current.centerLabel }
+          { param.current.centerLabel }
         </span>
         <span className="text-end text-sm text-gray-500">
-          { data.current.endLabel }
+          { param.current.endLabel }
         </span>
       </div>
     </div>

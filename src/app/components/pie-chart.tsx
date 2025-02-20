@@ -1,5 +1,5 @@
 "use client"
-import React from "react"
+import React, { useRef } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -15,19 +15,23 @@ type PieChartProps = {
   className?: string,
   title?: string,
   size?: "md" | "lg" | "xl" | "full",
-  data?: PieChartFormat
+  content?: PieChartFormat
 }
 
 export default React.memo<PieChartProps>(function PieChart({
-  id = uuid(),
+  id = "",
   className = "",
   title = "undefined",
   size = "md",
-  data = PieChartSampleData,
+  content = PieChartSampleData,
 }){
+  const data = useRef({
+    id: id || uuid(),
+  })
+
   const options: ApexOptions = {
     chart: {
-      id: id,
+      id: data.current.id,
     },
     title: {
       text: title,
@@ -42,7 +46,7 @@ export default React.memo<PieChartProps>(function PieChart({
     dataLabels: {
       /* eslint-disable */
       formatter: (val: number, opts: any) => {
-        return [`${ data.unit } ${ data.series[opts.seriesIndex].toLocaleString() }`, `${ Math.round(val * 10) / 10 } %`]
+        return [`${ content.unit } ${ content.series[opts.seriesIndex].toLocaleString() }`, `${ Math.round(val * 10) / 10 } %`]
       },
       style: {
         fontSize: "12px",
@@ -50,7 +54,7 @@ export default React.memo<PieChartProps>(function PieChart({
         fontFamily: "Inter, sans-serif",
       },
     },
-    labels: data.labels,
+    labels: content.labels,
     legend: {
       position: "bottom",
       fontSize: "12px",
@@ -69,11 +73,11 @@ export default React.memo<PieChartProps>(function PieChart({
             total: {
               showAlways: true,
               show: true,
-              label: data.label,
+              label: content.label,
               fontFamily: "Inter, sans-serif",
               /* eslint-disable */
               formatter: (w: any) => {
-                return data.unit + Number(w.globals.seriesTotals.reduce((a: number, b: number) => {
+                return content.unit + Number(w.globals.seriesTotals.reduce((a: number, b: number) => {
                   return a + b
                 }, 0)).toLocaleString()
               },
@@ -106,7 +110,7 @@ export default React.memo<PieChartProps>(function PieChart({
         type="donut"
         height={ (size === "md") ? 384 : (size === "lg") ? 448 : (size === "xl") ? 512 : "100%" }
         options={ options }
-        series={ data.series }
+        series={ content.series }
       />
     </div>
   )

@@ -1,5 +1,5 @@
 "use client"
-import React from "react"
+import React, { useRef } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -15,19 +15,23 @@ type BarChartProps = {
   className?: string,
   title?: string,
   size?: "md" | "lg" | "xl" | "full",
-  data?: BarChartFormat
+  content?: BarChartFormat
 }
 
 export default React.memo<BarChartProps>(function BarChart({
-  id = uuid(),
+  id = "",
   className = "",
   title = "undefined",
   size = "md",
-  data = BarChartSampleData,
+  content = BarChartSampleData,
 }){
+  const data = useRef({
+    id: id || uuid(),
+  })
+
   const options: ApexOptions = {
     chart: {
-      id: id,
+      id: id || data.current.id,
     },
     title: {
       text: title,
@@ -40,9 +44,9 @@ export default React.memo<BarChartProps>(function BarChart({
       },
     },
     xaxis: {
-      categories: data.axis.x.labels,
+      categories: content.axis.x.labels,
       title: {
-        text: data.axis.x.title,
+        text: content.axis.x.title,
         style: {
           fontSize: "14px",
           fontWeight: undefined,
@@ -53,7 +57,7 @@ export default React.memo<BarChartProps>(function BarChart({
     },
     yaxis: {
       title: {
-        text: data.axis.y.title,
+        text: content.axis.y.title,
         style: {
           fontSize: "14px",
           fontWeight: undefined,
@@ -83,7 +87,7 @@ export default React.memo<BarChartProps>(function BarChart({
         type="bar"
         height={ (size === "md") ? 384 : (size === "lg") ? 448 : (size === "xl") ? 512 : "100%" }
         options={ options }
-        series={ data.series }
+        series={ content.series }
         suppressHydrationWarning
       />
     </div>

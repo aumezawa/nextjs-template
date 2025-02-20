@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -20,7 +20,7 @@ type SelectFormProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(function SelectForm({
-  id = uuid(),
+  id = "",
   className = "",
   title = "",
   size = "auto",
@@ -42,6 +42,10 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
   }, [options, validate])
 
   const [valid, setValid] = useState(validateValue(defaultIndex))
+
+  const data = useRef({
+    id: id || uuid(),
+  })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const index = Number(e.currentTarget.value)
@@ -77,9 +81,9 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectFormProps>(f
         </p>
       }
       <select
-        key={ `${ id }-key-${ String(defaultIndex) }` }
+        key={ `${ data.current.id }-key-${ String(defaultIndex) }` }
         ref={ ref }
-        id={ id }
+        id={ data.current.id }
         className={ cn (
           "w-full p-2.5 text-sm rounded-lg rounded-2 border",
           (valid) && "text-green-900 bg-green-50 border-green-700",

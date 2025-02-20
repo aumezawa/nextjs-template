@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -19,7 +19,7 @@ type DateFormProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(function DateForm({
-  id = uuid(),
+  id = "",
   className = "",
   title = "",
   type = "datetime-local",
@@ -47,6 +47,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
   }, [type, validate])
 
   const [valid, setValid] = useState(validateValue(defaultValue))
+
+  const data = useRef({
+    id: id || uuid(),
+  })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const valid = validateValue(e.currentTarget.value)
@@ -81,9 +85,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateFormProps>(func
         </p>
       }
       <input
-        key={ `${ id }-key-${ String(defaultValue) }` }
+        key={ `${ data.current.id }-key-${ String(defaultValue) }` }
         ref={ ref }
-        id={ id }
+        id={ data.current.id }
         type={ type }
         className={ cn(
           "w-full p-2.5 text-sm rounded-lg rounded-2 border",

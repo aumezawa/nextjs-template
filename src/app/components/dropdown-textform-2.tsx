@@ -3,46 +3,39 @@ import React, { useCallback, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
-import Checkbox from "@/app/components/checkbox"
-import ToggleButton from "@/app/components/toggle-button"
+import Textform2 from "@/app/components/text-form-2"
 
 
-type DropdownCheckbox2Props = {
+type DropdownTextform2Props = {
   id?: string,
   className?: string,
   title?: string,
-  type?: "checkbox" | "toggle",
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
-  color?: "blue" | "green",
   label?: string,
   blank?: string,
-  options?: string[],
   disabled?: boolean,
-  defaultValues?: boolean[],
-  disabledValues?: boolean[],
-  reverse?: boolean,
-  validate?: (values: boolean[]) => boolean,
-  onChange?: (values: boolean[], valid: boolean, title: string) => void,
+  labels: string[],
+  defaultValues?: string[],
+  disableds?: boolean[],
+  validate?: (values: string[]) => boolean,
+  onChange?: (values: string[], valid: boolean, title: string) => void,
 }
 
-export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2Props>(function DropdownCheckbox2({
+export default React.memo(React.forwardRef<HTMLButtonElement, DropdownTextform2Props>(function DropdownTextform2({
   id = "",
   className = "",
   title = "",
-  type = "checkbox",
   size = "auto",
-  color = "blue",
   label = "undefined",
   blank = "<Nothing>",
-  options = [],
   disabled = false,
+  labels = [],
   defaultValues = [],
-  disabledValues = [],
-  reverse = false,
+  disableds = [],
   validate = undefined,
   onChange = undefined,
 }, ref){
-  const validateValue = useCallback((values: boolean[]) => {
+  const validateValue = useCallback((values: string[]) => {
     let valid = true
     if (validate) {
       valid = (valid && validate(values))
@@ -53,13 +46,9 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
   const [valid, setValid] = useState(validateValue(defaultValues))
   const [display, setDisplay] = useState(false)
 
-  const updateDisplay = useCallback((values: boolean[]) => {
-    if (reverse) {
-      return options.filter((option: string, index: number) => (!!option && !values[index])).join(", ") || blank
-    } else {
-      return options.filter((option: string, index: number) => (!!option && values[index])).join(", ") || blank
-    }
-  }, [options, blank, reverse])
+  const updateDisplay = useCallback((values: string[]) => {
+    return values.filter((value: string) => (value)).map((_: string, index: number) => (labels[index])).join(", ") || blank
+  }, [labels, blank])
 
   const data = useRef({
     id: id || uuid(),
@@ -67,7 +56,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
     values: defaultValues,
   })
 
-  const handleChange = useCallback((value: boolean, index: string) => {
+  const handleChange = useCallback((value: string, _: boolean, index: string) => {
     data.current.values[Number(index)] = value
     data.current.display = updateDisplay(data.current.values)
     const valid = validateValue(data.current.values)
@@ -130,35 +119,23 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
         </div>
       </div>
       <div id={ `${ data.current.id }-dropdown` } className="z-20 hidden w-96 bg-white border divide-y divide-gray-100 rounded-lg shadow-sm" suppressHydrationWarning>
-        <ul className="px-3 py-2 text-sm text-gray-700">
+        <ul className="px-2 py-0 text-sm text-gray-700">
           {
-            options.map((option: string, index: number) => {
+            labels.map((label: string, index: number) => {
               return (
                 <li key={ index }>
-                  <div className="flex items-center p-2 rounded-sm hover:bg-gray-100">
-                    {
-                      (type === "checkbox") &&
-                      <Checkbox
-                        className="m-0"
-                        title={ String(index) }
-                        label={ option }
-                        disabled={ disabledValues[index] }
-                        defaultChecked={ defaultValues[index] }
-                        onChange={ handleChange }
-                      />
-                    }
-                    {
-                      (type === "toggle") &&
-                      <ToggleButton
-                        className="m-0"
-                        title={ String(index) }
-                        color={ color }
-                        label={ option }
-                        disabled={ disabledValues[index] }
-                        defaultChecked={ defaultValues[index] }
-                        onChange={ handleChange }
-                      />
-                    }
+                  <div className="flex items-center p-2 rounded-sm">
+                    <Textform2
+                      id={ `${ data.current.id }-textform-${ index }` }
+                      className="m-0"
+                      title={ String(index) }
+                      size="full"
+                      label={ label }
+                      disabled={ disableds[index] }
+                      defaultValue={ defaultValues[index] }
+                      validate={ undefined }
+                      onChange={ handleChange }
+                    />
                   </div>
                 </li>
               )

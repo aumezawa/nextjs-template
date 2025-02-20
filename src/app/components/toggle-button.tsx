@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useRef } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -17,7 +17,7 @@ type CheckboxProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox({
-  id = uuid(),
+  id = "",
   className = "",
   title = "",
   size = "auto",
@@ -28,6 +28,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
   fixed = false,
   onChange = undefined,
 }, ref) {
+  const data = useRef({
+    id: id || uuid(),
+  })
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
       onChange(e.currentTarget.checked, title)
@@ -47,9 +51,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
     ) }>
       <label className="inline-flex items-center gap-2 cursor-pointer">
         <input
-          key={ `${ id }-key-${ String(defaultChecked) }` }
+          key={ `${ data.current.id }-key-${ String(defaultChecked) }` }
           ref={ ref }
-          id={ id }
+          id={ data.current.id }
           type="checkbox"
           className="sr-only peer"
           disabled={ disabled || fixed }

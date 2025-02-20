@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -21,7 +21,7 @@ type TextFormProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(function TextForm({
-  id = uuid(),
+  id = "",
   className = "",
   title = "",
   size = "auto",
@@ -44,6 +44,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
   }, [validate])
 
   const [valid, setValid] = useState(validateValue(defaultValue))
+
+  const data = useRef({
+    id: id || uuid(),
+  })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const valid = validateValue(e.currentTarget.value)
@@ -85,9 +89,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
       }
       <div className="flex flex-row">
         <input
-          key={ `${ id }-key-${ String(defaultValue) }` }
+          key={ `${ data.current.id }-key-${ String(defaultValue) }` }
           ref={ ref }
-          id={ id }
+          id={ data.current.id }
           type="text"
           className={ cn(
             "flex-grow min-w-0 p-2.5 text-sm rounded-lg rounded-2 border",

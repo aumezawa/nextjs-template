@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -20,7 +20,7 @@ type SelectForm2Props = {
 }
 
 export default React.memo(React.forwardRef<HTMLSelectElement, SelectForm2Props>(function SelectForm2({
-  id = uuid(),
+  id = "",
   className = "",
   title = "",
   size = "auto",
@@ -42,6 +42,10 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectForm2Props>(
   }, [options, validate])
 
   const [valid, setValid] = useState(validateValue(defaultIndex))
+
+  const data = useRef({
+    id: id || uuid(),
+  })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const index = Number(e.currentTarget.value)
@@ -65,9 +69,9 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectForm2Props>(
     ) }>
       <div className="relative w-full mt-3 group">
         <select
-          key={ `${ id }-key-${ String(defaultIndex) }` }
+          key={ `${ data.current.id }-key-${ String(defaultIndex) }` }
           ref={ ref }
-          id={ id }
+          id={ data.current.id }
           className={ cn (
             "block w-full px-0 py-2.5 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
             (valid) && "text-green-700 border-green-500 focus:border-green-500",
@@ -93,7 +97,7 @@ export default React.memo(React.forwardRef<HTMLSelectElement, SelectForm2Props>(
           }
         </select>
         <label
-          htmlFor={ id }
+          htmlFor={ data.current.id }
           className={ cn(
             "absolute top-3 -translate-y-6 origin-[0] scale-75 text-sm",
             (valid) && "text-green-500 peer-focus:text-green-700",

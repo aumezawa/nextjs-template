@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useRef } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
 
@@ -16,7 +16,7 @@ type CheckboxProps = {
 }
 
 export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox({
-  id = uuid(),
+  id = "",
   className = "",
   title = "",
   size = "auto",
@@ -26,6 +26,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
   fixed = false,
   onChange = undefined,
 }, ref) {
+  const data = useRef({
+    id: id || uuid(),
+  })
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
       onChange(e.currentTarget.checked, title)
@@ -44,9 +48,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
       className,
     ) }>
       <input
-        key={ `${ id }-key-${ String(defaultChecked) }` }
+        key={ `${ data.current.id }-key-${ String(defaultChecked) }` }
         ref={ ref }
-        id={ id }
+        id={ data.current.id }
         type="checkbox"
         className={ cn(
           "w-4 h-4 text-blue-700 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 focus:ring-2",
@@ -61,7 +65,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
       {
         (label) &&
         <label
-          htmlFor={ id }
+          htmlFor={ data.current.id }
           className={ cn(
             "text-sm font-medium text-gray-900 whitespace-nowrap cursor-pointer",
             (disabled) && "text-gray-400 cursor-not-allowed",
