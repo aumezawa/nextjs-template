@@ -1,5 +1,6 @@
 export type TableContent = {
-  [label: string]: string | number | boolean,
+  /* eslint-disable-next-line */
+  [label: string]: any,
 }
 
 export type TableFormat = {

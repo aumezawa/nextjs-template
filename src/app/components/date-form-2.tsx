@@ -26,7 +26,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
   size = "auto",
   label = "undefined",
   disabled = false,
-  defaultValue = new Date().toISOString().slice(0,16),
+  defaultValue = "",
   fixed = false,
   validate = undefined,
   onChange = undefined,
@@ -46,10 +46,24 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
     return valid
   }, [type, validate])
 
+  const setDefaultValue = useCallback(() => {
+    const patterns = {
+      "date": /^([0-9]{4}-[0-9]{2}-[0-9]{2}){0,1}$/,
+      "time": /^([0-9]{2}:[0-9]{2}){0,1}$/,
+      "datetime-local": /^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}){0,1}$/,
+    }
+    let value = defaultValue
+    if (!defaultValue.match(patterns[type])) {
+      value = ""
+    }
+    return value
+  }, [type, defaultValue])
+
   const [valid, setValid] = useState(validateValue(defaultValue))
 
   const data = useRef({
     id: id || uuid(),
+    value: setDefaultValue(),
   })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +101,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, DateForm2Props>(fun
           ) }
           placeholder=""
           disabled={ disabled || fixed }
-          defaultValue={ valid ? defaultValue : "" }
+          defaultValue={ data.current.value }
           onChange={ handleChange }
           suppressHydrationWarning
         />

@@ -8,6 +8,7 @@ type TextFormProps = {
   id?: string,
   className?: string,
   title?: string,
+  type?: "text" | "dec" | "JPY" | "USD",
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
   label?: string,
   button?: "none" | "search" | "download" | "upload" | "message",
@@ -24,6 +25,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
   id = "",
   className = "",
   title = "",
+  type = "text",
   size = "auto",
   label = "undefined",
   button = "none",
@@ -43,19 +45,86 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
     return valid
   }, [validate])
 
+  const setDefaultValue = useCallback(() => {
+    const patterns = {
+      "text": /^.*$/,
+      "dec": /^[0-9]*$/,
+      "JPY": /^[¥]{0,1}(([0-9]{1,3}([,][0-9]{3})*)|([0-9]*))$/,
+      "USD": /^[$]{0,1}(([0-9]{1,3}([,][0-9]{3})*([.][0-9]{0,2}){0,1})|([0-9]*)([.][0-9]{0,2}){0,1})$/,
+    }
+
+    let value = defaultValue
+    if (!defaultValue.match(patterns[type])) {
+      value = ""
+    }
+    return value
+  }, [type, defaultValue])
+
   const [valid, setValid] = useState(validateValue(defaultValue))
 
   const data = useRef({
     id: id || uuid(),
+    value: setDefaultValue(),
   })
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const valid = validateValue(e.currentTarget.value)
+    let value = e.currentTarget.value
+    if (type === "dec") {
+      const pattern = /^[0-9]*$/
+      if (!value.match(pattern)) {
+        e.currentTarget.value = data.current.value
+        return
+      }
+    } else if (type === "JPY") {
+      const pattern = /^[¥]{0,1}(([0-9]*)|([0-9]{1,3}([,][0-9]{3})*([,][0-9]{0,2}){0,1}))$/
+      if (value === "\\") {
+        e.currentTarget.value = value = "¥"
+      } else if (!value.match(pattern)) {
+        e.currentTarget.value = data.current.value
+        return
+      }
+    } else if (type === "USD") {
+      const pattern = /^[$]{0,1}(([0-9]*([.][0-9]{0,2}){0,1})|([0-9]{1,3}([,][0-9]{3})*([,][0-9]{0,2}){0,1})|([0-9]{1,3}([,][0-9]{3})*([.][0-9]{0,2}){0,1}))$/
+      if (!value.match(pattern)) {
+        e.currentTarget.value = data.current.value
+        return
+      }
+    }
+
+    data.current.value = value
+
+    const valid = validateValue(value)
     if (onChange) {
-      onChange(e.currentTarget.value, valid, title)
+      onChange(value, valid, title)
     }
     setValid(valid)
-  }, [title, onChange, validateValue])
+  }, [title, type, onChange, validateValue])
+
+  const handleBlur = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (type === "JPY") {
+      if (data.current.value !== "") {
+        e.currentTarget.value = data.current.value = Number(data.current.value.replace("¥", "").replace(",", "")).toLocaleString("en-us", { style: "currency", currency: "JPY" })
+        const valid = validateValue(data.current.value)
+        if (onChange) {
+          onChange(data.current.value, valid, title)
+        }
+        setValid(valid)
+      }
+    } else if (type === "USD") {
+      if (data.current.value !== "") {
+        if (data.current.value === ".") {
+          e.currentTarget.value = data.current.value = "0"
+        } else {
+          e.currentTarget.value = data.current.value = Number(data.current.value.replace("$", "").replace(",", "")).toLocaleString("en-us", { style: "currency", currency: "USD" })
+        }
+        const valid = validateValue(data.current.value)
+        if (onChange) {
+          onChange(data.current.value, valid, title)
+        }
+        setValid(valid)
+      }
+    }
+  }, [title, type, onChange, validateValue])
 
   const handleSubmit = useCallback(() => {
     if (onSubmit) {
@@ -104,8 +173,9 @@ export default React.memo(React.forwardRef<HTMLInputElement, TextFormProps>(func
           ) }
           disabled={ disabled || fixed }
           placeholder={ placeholder }
-          defaultValue={ defaultValue }
+          defaultValue={ data.current.value }
           onChange={ handleChange }
+          onBlur={ handleBlur }
           suppressHydrationWarning
         />
         {
