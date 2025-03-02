@@ -1,11 +1,12 @@
 "use client"
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useImperativeHandle, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
+import type { FormElement } from "@/app/types/form"
 
 
 type RangeSliderParams = {
-  type: string,
+  type: "dec" | "date",
   value: number,
   start: number,
   end: number,
@@ -17,8 +18,9 @@ type RangeSliderParams = {
 type RangeSliderProps = {
   id?: string,
   className?: string,
-  type?: "number" | "date",
+  type?: "dec" | "date",
   title?: string,
+  subtitle?: string,
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
   label?: string,
   disabled?: boolean,
@@ -30,14 +32,15 @@ type RangeSliderProps = {
   centerLabel?: string,
   endLabel?: string,
   replace?: (label: string, type: string, value: number) => number | string,
-  onChange?: (type: string, value: number | string, index: number, title: string) => void,
+  onChange?: (type: string, value: number | string, index: number, title: string, subtitle: string) => void,
 }
 
-export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(function RangeSlider({
-  id = "",
+export default React.memo(React.forwardRef<FormElement, RangeSliderProps>(function RangeSlider({
+  id = undefined,
   className = "",
-  type = "number",
+  type = "dec",
   title = "",
+  subtitle = "",
   size = "auto",
   label = "undefined",
   disabled = false,
@@ -62,9 +65,10 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
   },
   onChange = undefined,
 }, ref) {
-  const [display, setDisplay] = useState(false)
+  const [reload, setReload] = useState(false)
 
   const refs = useRef({
+    input: React.createRef<HTMLInputElement>(),
     bar: React.createRef<HTMLDivElement>(),
   })
 
@@ -72,8 +76,40 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
     id: id || uuid(),
   })
 
+  useImperativeHandle(ref, () => ({
+    clear: () => {},
+    set: (value?: string) => {
+      if (value) {
+        if (param.current.type === "dec") {
+          if (Number(value) >= param.current.start && Number(value) <= param.current.end) {
+            param.current.value = Number(value)
+            if (refs.current.input.current) {
+              refs.current.input.current.value = String(param.current.value)
+            }
+          }
+        } else if (param.current.type === "date") {
+          const baseDate = new Date("2001-01-01")
+          const valueDate = new Date(value)
+          if (valueDate.toString() !== "Invalid Date") {
+            const tmpValue = (valueDate.getTime() - baseDate.getTime()) / 86400000
+            if (tmpValue >= param.current.start && tmpValue <= param.current.end) {
+              param.current.value = tmpValue
+              if (refs.current.input.current) {
+                refs.current.input.current.value = String(param.current.value)
+              }
+            }
+          }
+        }
+        setReload(!reload)
+      }
+    },
+    get: () => {
+      return refs.current.input.current?.value
+    },
+  }))
+
   const validateUserInput = useCallback(() => {
-    let tmpType = "number"
+    let tmpType: "dec" | "date" = "dec"
     let tmpStartNum = 0
     let tmpEndNum = 100
     let tmpValue = 50
@@ -139,7 +175,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
           }
         }
       }
-    } else if (type === "number") {
+    } else if (type === "dec") {
       if (typeof start === "number" && typeof end === "number") {
         if (start <= end) {
           tmpStartNum = start
@@ -183,23 +219,23 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
         const offset = +9 * 60 * 60 * 1000  /* only JST supported */
         const date = new Date()
         date.setTime(param.current.value * 86400000 + offset)
-        onChange(param.current.type, date.toISOString().slice(5, 10).replace("-", "/"), param.current.value - param.current.start, title)
+        onChange(param.current.type, date.toISOString().slice(5, 10).replace("-", "/"), param.current.value - param.current.start, title, subtitle)
       } else {
-        onChange(param.current.type, param.current.value, param.current.value - param.current.start, title)
+        onChange(param.current.type, param.current.value, param.current.value - param.current.start, title, subtitle)
       }
     }
-    setDisplay(!display)
-  }, [display, title, onChange])
+    setReload(!reload)
+  }, [reload, title, subtitle, onChange])
 
   return (
     <div className={ cn(
       "relative mb-2",
-      (size !== "auto") && "w-full",
-      (size === "xs") && "max-w-xs mx-auto",
-      (size === "sm") && "max-w-sm mx-auto",
-      (size === "md") && "max-w-md mx-auto",
-      (size === "lg") && "max-w-lg mx-auto",
-      (size === "xl") && "max-w-xl mx-auto",
+      (size === "xs") && "w-full max-w-xs mx-auto",
+      (size === "sm") && "w-full max-w-sm mx-auto",
+      (size === "md") && "w-full max-w-md mx-auto",
+      (size === "lg") && "w-full max-w-lg mx-auto",
+      (size === "xl") && "w-full max-w-xl mx-auto",
+      (size === "full") && "w-full",
       className,
     ) }>
       <label
@@ -224,7 +260,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, RangeSliderProps>(f
       >
       </div>
       <input
-        ref={ ref }
+        ref={ refs.current.input }
         id={ data.current.id }
         type="range"
         className="absolute top-10 left-0 w-full h-0 z-6 accent-blue-600 pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:p-2.5"

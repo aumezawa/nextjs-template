@@ -15,7 +15,7 @@ type ModalFrameProps = {
 }
 
 export default React.memo<ModalFrameProps>(function ModalFrame({
-  id = "",
+  id = undefined,
   size = "md",
   cols = "1",
   closable = true,

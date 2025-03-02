@@ -1,17 +1,18 @@
 "use client"
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useImperativeHandle, useRef, useState } from "react"
 import { cn } from "@/app/libs/utils"
+import type { FormElement } from "@/app/types/form"
 
-import Chackbox from "@/app/components/checkbox"
 import DropdownFromIcon from "@/app/components/dropdown-form-icon"
+import DropdownSelectIcon from "./dropdown-select-icon"
 import IconButton from "@/app/components/icon-button"
 import type { TableFormat, TableContent } from "@/app/types/table"
-import DropdownSelectIcon from "./dropdown-select-icon"
 
 
 type Filter = {
+  id: number,
   label: string,
-  type: "text" | "dec" | "JPY" | "USD" | "date",
+  type: "text" | "dec" | "JPY" | "USD" | "date" | "select",
   from: string,
   to: string,
 }
@@ -22,7 +23,6 @@ type TableProps = {
   filter?: { [label: string]: "text" | "dec" | "JPY" | "USD" | "date" | "select" }
   label?: string,
   sticky?: 0 | 1,
-  checkable?: boolean,
   commandable?: boolean,
   linkable?: boolean,
   linkIcon?: boolean,
@@ -33,18 +33,17 @@ type TableProps = {
   filterRow?: (content: TableContent, row: number) => boolean,
   replaceLabel?: (label: string) => string,
   /* eslint-disable-next-line */
-  replaceValue?: (value: any, label: string, row: number) => string | number | boolean | React.JSX.Element,
+  replaceValue?: (value: any, label: string, content: TableContent, row: number) => string | number | boolean | React.JSX.Element,
   onChecked?: (value: Array<string>) => void,
-  onCommand?: (row: number) => void,
+  onCommand?: (content: TableContent, row: number) => void,
 }
 
-export default React.memo<TableProps>(function Table({
+export default React.memo(React.forwardRef<FormElement, TableProps>(function Table({
   className = "",
   data = { title: "untitled", labels: ["unlabeled"], contents: [{ unlabeled: "no data" }] },
   filter = {},
   sticky = 0,
   label = "",
-  checkable = false,
   commandable = false,
   linkable = false,
   linkIcon = false,
@@ -55,84 +54,111 @@ export default React.memo<TableProps>(function Table({
   filterRow = () => true,
   replaceLabel = (label: string) => (label),
   replaceValue = (value: string | number | boolean) => (value),
-  onChecked = undefined,
   onCommand = undefined,
-}){
-  const [checked, setChecked] = useState<Array<string>>([])
+}, ref){
   const [reload, setReload] = useState(false)
 
   const refs = useRef({
-    head: React.createRef<HTMLInputElement>(),
-    body: ([] as Array<React.RefObject<HTMLInputElement | null>>),
+    forms: [] as Array<React.RefObject<FormElement | null>>,
   })
 
   const filters = useRef<Array<Filter>>([])
 
-  const handleChecked = useCallback((value: boolean, title: string) => {
-    let updated: Array<string> = []
-
-    if (title === "header") {
-      if (value) {
-        updated = refs.current.body.map((_: React.RefObject<HTMLInputElement | null>, index: number) => String(index))
-      } else {
-        updated = []
-      }
-      refs.current.body.forEach((ref: React.RefObject<HTMLInputElement | null>) => {
-        if (ref.current) {
-          ref.current.checked = value
-        }
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      filters.current = []
+      refs.current.forms.forEach((form: React.RefObject<FormElement | null>) => {
+        form.current?.clear()
       })
-    } else {
-      if (value) {
-        updated = [...checked, title].sort()
-        if (updated.length === data.contents.length) {
-          if (refs.current.head.current) {
-            refs.current.head.current.checked = value
-          }
+      setReload(!reload)
+    },
+    set: (value?: string, index?: number, subIndex?: number) => {
+      if (index !== undefined && index >= 0 && index < data.labels.length && filter[data.labels[index]] !== undefined) {
+        const curfil = filters.current.find((filter: Filter) => (filter.id === index))
+        const from = (subIndex === 0) ? value || "" : ""
+        const to = (subIndex === 1) ? value || "" : ""
+        if (curfil === undefined) {
+          filters.current.push({
+            id: index,
+            label: data.labels[index],
+            type: filter[data.labels[index]] as "text" | "dec" | "JPY" | "USD" | "date",
+            from: from,
+            to: to,
+          })
+        } else {
+          curfil.from = from
+          curfil.to = to
         }
+        refs.current.forms[index].current?.set(value, subIndex)
+        setReload(!reload)
+      }
+    },
+    get: (index?: number, subIndex?: number) => {
+      if (index !== undefined && index >= 0 && index < data.labels.length) {
+        return refs.current.forms[index].current?.get(subIndex)
+      }
+      return undefined
+    },
+  }))
+
+  const handleChangeFilter = useCallback((value: string, _: boolean, title: string, subtitle: string) => {
+    const index = Number(title)
+    const subIndex = Number(subtitle)
+
+    if (subIndex === 0) {
+      const to = refs.current.forms[index].current?.get(1)
+      if (value === "" && (to === undefined || to === "")) {
+        filters.current = filters.current.filter((filter: Filter) => (filter.id !== index))
       } else {
-        updated = checked.filter((row: string) => (row !== title))
-        if (refs.current.head.current) {
-          refs.current.head.current.checked = value
+        const curfil = filters.current.find((filter: Filter) => (filter.id === index))
+        if (curfil === undefined) {
+          filters.current.push({
+            id: index,
+            label: data.labels[index],
+            type: filter[data.labels[index]] as "text" | "dec" | "JPY" | "USD" | "date",
+            from: value,
+            to: to || "",
+          })
+        } else {
+          curfil.from = value
+          curfil.to = to || ""
         }
       }
-    }
-    if (onChecked) {
-      onChecked(updated)
-    }
-    setChecked(updated)
-  }, [checked, data, onChecked])
-
-  const handleChangeFilter = useCallback((values: string[], _: boolean, title: string) => {
-    if (values[0] === "" && values[1] === "") {
-      filters.current = filters.current.filter((filter: Filter) => (filter.label !== title))
-    } else {
-      const curfil = filters.current.find((filter: Filter) => (filter.label === title))
-      if (curfil === undefined) {
-        filters.current.push({
-          label: title,
-          type: filter[title] as "text" | "dec" | "JPY" | "USD" | "date",
-          from: values[0],
-          to: values[1],
-        })
+    } else if (subIndex === 1) {
+      const from = refs.current.forms[index].current?.get(0)
+      if (value === "" && (from === undefined || from === "")) {
+        filters.current = filters.current.filter((filter: Filter) => (filter.id !== index))
       } else {
-        curfil.from = values[0]
-        curfil.to = values[1]
+        const curfil = filters.current.find((filter: Filter) => (filter.id === index))
+        if (curfil === undefined) {
+          filters.current.push({
+            id: index,
+            label: data.labels[index],
+            type: filter[data.labels[index]] as "text" | "dec" | "JPY" | "USD" | "date" | "select",
+            from: from || "",
+            to: value,
+          })
+        } else {
+          curfil.from = from || ""
+          curfil.to = value
+        }
       }
     }
     setReload(!reload)
-  }, [reload, filter])
+  }, [reload, data, filter])
 
-  const handleChangeSelectFilter = useCallback((value: string, index: number, _: boolean, title: string) => {
-    console.log(value, index, title)
-    if (index === -1) {
-      filters.current = filters.current.filter((filter: Filter) => (filter.label !== title))
+  const handleChangeSelectFilter = useCallback((value: string, vIndex: number, _: boolean, title: string) => {
+    const index = Number(title)
+
+    if (vIndex === -1) {
+      filters.current = filters.current.filter((filter: Filter) => (filter.id !== index))
     } else {
-      const curfil = filters.current.find((filter: Filter) => (filter.label === title))
+      const curfil = filters.current.find((filter: Filter) => (filter.id === index))
       if (curfil === undefined) {
         filters.current.push({
-          label: title,
-          type: "text",
+          id: index,
+          label: data.labels[index],
+          type: "select",
           from: value,
           to: "",
         })
@@ -142,19 +168,20 @@ export default React.memo<TableProps>(function Table({
       }
     }
     setReload(!reload)
-  }, [reload])
+  }, [reload, data])
 
   const handleCommand = useCallback((title: string) => {
+    const index = Number(title)
     if (onCommand) {
-      onCommand(Number(title))
+      onCommand(data.contents[index], index)
     }
-  }, [onCommand])
+  }, [data, onCommand])
 
   const applyFilterRow = (content: TableContent) => {
-    return data.labels.map((label: string) => {
-      const curfil = filters.current.find((filter: Filter) => (filter.label === label))
+    return data.labels.map((label: string, index: number) => {
+      const curfil = filters.current.find((filter: Filter) => (filter.id === index))
       if (curfil) {
-        if (curfil.type === "text") {
+        if (curfil.type === "text" || curfil.type === "select") {
           if (typeof content[label] !== "string") {
             return false
           } else {
@@ -189,6 +216,13 @@ export default React.memo<TableProps>(function Table({
     }).reduce((acc: boolean, cur: boolean) => (acc && cur))
   }
 
+  const initializeRefs = useCallback(() => {
+    for (let i = 0; i < data.labels.length - refs.current.forms.length; i++) {
+      refs.current.forms.push(React.createRef<FormElement>())
+    }
+    return null
+  }, [data])
+
   return (
     <div className={ cn(
       "w-full h-full overflow-x-auto overflow-y-auto",
@@ -203,18 +237,6 @@ export default React.memo<TableProps>(function Table({
           (alignLabel === "right") && "text-right",
         ) }>
           <tr>
-            {
-              checkable && (sticky === 0) &&
-              <th scope="col" className="sticky left-0 z-0 px-3 py-3 bg-gray-100">
-                <Chackbox
-                  ref={ refs.current.head }
-                  className="m-0"
-                  title="header"
-                  label=""
-                  onChange={ handleChecked }
-                />
-              </th>
-            }
             {
               // sticky col
               data.labels
@@ -235,27 +257,30 @@ export default React.memo<TableProps>(function Table({
               .map((label: string, index: number) => (
                 <th key={ index + sticky } scope="col" className="px-6 py-3">
                   <div className="inline-flex items-center">
-                  { replaceLabel(label) }
-                  {
-                    (filter[label] === "text" || filter[label] === "dec" || filter[label] === "JPY" || filter[label] === "USD" || filter[label] === "date") &&
-                    <DropdownFromIcon
-                      className="ms-2"
-                      title={ label }
-                      type={ filter[label] }
-                      applying={ filters.current.map((filter: Filter) => (filter.label)).includes(label) }
-                      onChange={ handleChangeFilter }
-                    />
-                  }
-                  {
-                    (filter[label] === "select") &&
-                    <DropdownSelectIcon
-                      className="ms-2"
-                      title={ label }
-                      options={ [...new Set(data.contents.filter((content: TableContent) => (typeof content[label] === "string")).map((content: TableContent) => (content[label])))] }
-                      applying={ filters.current.map((filter: Filter) => (filter.label)).includes(label) }
-                      onChange={ handleChangeSelectFilter }
-                    />
-                  }
+                    { initializeRefs() }
+                    { replaceLabel(label) }
+                    {
+                      (filter[label] === "text" || filter[label] === "dec" || filter[label] === "JPY" || filter[label] === "USD" || filter[label] === "date") &&
+                      <DropdownFromIcon
+                        ref={ refs.current.forms[index + sticky] }
+                        className="ms-2"
+                        title={ String(index + sticky) }
+                        type={ filter[label] }
+                        applying={ !!filters.current.find((filter: Filter) => (filter.id === index + sticky)) }
+                        onChange={ handleChangeFilter }
+                      />
+                    }
+                    {
+                      (filter[label] === "select") &&
+                      <DropdownSelectIcon
+                        ref={ refs.current.forms[index + sticky] }
+                        className="ms-2"
+                        title={ String(index + sticky) }
+                        options={ [...new Set(data.contents.filter((content: TableContent) => (typeof content[label] === "string")).map((content: TableContent) => (content[label])))] }
+                        applying={ !!filters.current.find((filter: Filter) => (filter.id === index + sticky)) }
+                        onChange={ handleChangeSelectFilter }
+                      />
+                    }
                   </div>
                 </th>
               ))
@@ -269,14 +294,6 @@ export default React.memo<TableProps>(function Table({
         </thead>
         {
           data.contents.map((content: TableContent, row: number) => {
-            // recreating refs
-            if (row > refs.current.body.length - 1) {
-              refs.current.body.push(React.createRef<HTMLInputElement>())
-            }
-            if (row === refs.current.body.length - 1) {
-              refs.current.body = refs.current.body.slice(0, refs.current.body.length)
-            }
-
             // filter rows
             if (!applyFilterRow(content) || !filterRow(content, row)) {
               return (
@@ -294,30 +311,13 @@ export default React.memo<TableProps>(function Table({
                   className={ cn(
                     "text-nowrap border-b",
                     (highlight === "none") && "bg-white hover:bg-gray-100",
-                    (highlight === "none" && (checked.includes(String(row)))) && "bg-blue-100 hover:bg-blue-200",
                     (highlight === "info") && "bg-green-100 hover:bg-green-200",
-                    (highlight === "info" && (checked.includes(String(row)))) && "bg-green-200 hover:bg-green-300",
                     (highlight === "warning") && "bg-yellow-100 hover:bg-yellow-200",
-                    (highlight === "warning" && (checked.includes(String(row)))) && "bg-yellow-200 hover:bg-yellow-300",
                     (highlight === "error") && "bg-red-100 hover:bg-red-200",
-                    (highlight === "error" && (checked.includes(String(row)))) && "bg-red-200 hover:bg-red-300",
                     (highlight === "blind") && "bg-gray-300 hover:bg-gray-400",
-                    (highlight === "blind" && (checked.includes(String(row)))) && "bg-gray-400 hover:bg-gray-500",
                   ) }
                   title={ String(data.contents[row][label]) }
                 >
-                  {
-                    checkable && !sticky &&
-                    <td className="sticky left-0 z-0 px-3 py-3">
-                      <Chackbox
-                        ref={ refs.current.body[row] }
-                        className="m-0"
-                        title={ String(row) }
-                        label=""
-                        onChange={ handleChecked }
-                      />
-                    </td>
-                  }
                   {
                     // sticky cols
                     data.labels
@@ -341,7 +341,7 @@ export default React.memo<TableProps>(function Table({
                         {
                           (() => {
                             // replace value
-                            const value = replaceValue(content[label], label, row)
+                            const value = replaceValue(content[label], label, content, row)
                             if (value === undefined) {
                               return ""
                             }
@@ -402,7 +402,8 @@ export default React.memo<TableProps>(function Table({
                       <IconButton
                         className="m-0 p-1"
                         title={ String(row) }
-                        color="light"
+                        color="black"
+                        bgcolor="white"
                         label="edit"
                         onClick={ handleCommand }
                       />
@@ -416,4 +417,4 @@ export default React.memo<TableProps>(function Table({
       </table>
     </div>
   )
-})
+}))

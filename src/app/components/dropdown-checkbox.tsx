@@ -1,13 +1,14 @@
 "use client"
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useImperativeHandle, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
+import type { FormElement } from "@/app/types/form"
 
 import Checkbox from "@/app/components/checkbox"
 import ToggleButton from "@/app/components/toggle-button"
 
 
-type DropdownCheckbox2Props = {
+type DropdownCheckboxProps = {
   id?: string,
   className?: string,
   title?: string,
@@ -21,12 +22,11 @@ type DropdownCheckbox2Props = {
   defaultValues?: boolean[],
   disabledValues?: boolean[],
   reverse?: boolean,
-  validate?: (values: boolean[]) => boolean,
-  onChange?: (values: boolean[], valid: boolean, title: string) => void,
+  onChange?: (value: boolean, title: string, subtitle: string) => void,
 }
 
-export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2Props>(function DropdownCheckbox2({
-  id = "",
+export default React.memo(React.forwardRef<FormElement, DropdownCheckboxProps>(function DropdownCheckbox({
+  id = undefined,
   className = "",
   title = "",
   type = "checkbox",
@@ -36,22 +36,12 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
   blank = "<Nothing>",
   options = [],
   disabled = false,
-  defaultValues = [],
-  disabledValues = [],
+  defaultValues = options.map(() => (false)),
+  disabledValues = options.map(() => (false)),
   reverse = false,
-  validate = undefined,
   onChange = undefined,
 }, ref){
-  const validateValue = useCallback((values: boolean[]) => {
-    let valid = true
-    if (validate) {
-      valid = (valid && validate(values))
-    }
-    return valid
-  }, [validate])
-
-  const [valid, setValid] = useState(validateValue(defaultValues))
-  const [display, setDisplay] = useState(false)
+  const [reload, setReload] = useState(false)
 
   const updateDisplay = useCallback((values: boolean[]) => {
     if (reverse) {
@@ -59,7 +49,11 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
     } else {
       return options.filter((option: string, index: number) => (!!option && values[index])).join(", ") || blank
     }
-  }, [options, blank, reverse])
+  }, [blank, options, reverse])
+
+  const refs = useRef({
+    forms: options.map(() => (React.createRef<FormElement>())),
+  })
 
   const data = useRef({
     id: id || uuid(),
@@ -67,40 +61,60 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
     values: defaultValues,
   })
 
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      data.current.values = options.map(() => (false))
+      refs.current.forms.forEach((form: React.RefObject<FormElement | null>) => {
+        form.current?.clear()
+      })
+    },
+    set: (value?: string, index?: number) => {
+      if (index !== undefined && index >= 0 && index < options.length) {
+        if (value === "true") {
+          data.current.values[index] = true
+          refs.current.forms[index].current?.set()
+        } else if (value === "false") {
+          data.current.values[index] = false
+          refs.current.forms[index].current?.clear()
+        }
+      }
+    },
+    get: (index?: number) => {
+      if (index !== undefined && index >= 0 && index < options.length) {
+        return refs.current.forms[index].current?.get()
+      }
+      return undefined
+    },
+  }))
+
   const handleChange = useCallback((value: boolean, index: string) => {
     data.current.values[Number(index)] = value
     data.current.display = updateDisplay(data.current.values)
-    const valid = validateValue(data.current.values)
     if (onChange) {
-      onChange(data.current.values, valid, title)
+      onChange(value, title, index)
     }
-    setValid(valid)
-    setDisplay(!display)
-  }, [display, title, onChange, validateValue, updateDisplay])
+    setReload(!reload)
+  }, [reload, title, onChange, updateDisplay])
 
   return (
     <div className={ cn(
       "mb-2",
-      (size !== "auto") && "w-full",
-      (size === "xs") && "max-w-xs mx-auto",
-      (size === "sm") && "max-w-sm mx-auto",
-      (size === "md") && "max-w-md mx-auto",
-      (size === "lg") && "max-w-lg mx-auto",
-      (size === "xl") && "max-w-xl mx-auto",
+      (size === "xs") && "w-full max-w-xs mx-auto",
+      (size === "sm") && "w-full max-w-sm mx-auto",
+      (size === "md") && "w-full max-w-md mx-auto",
+      (size === "lg") && "w-full max-w-lg mx-auto",
+      (size === "xl") && "w-full max-w-xl mx-auto",
+      (size === "full") && "w-full",
       className,
     ) }>
       <div className="flex flex-row">
         <div className="relative w-full z-0 mt-3 group">
           <button
-            ref={ ref }
             id={ data.current.id }
             type="button"
             className={ cn(
               "flex flex-row items-center w-full px-0 py-2.5 text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer",
-              "text-gray-900 border-gray-700 focus:border-gray-700",
-              (valid) && "text-green-700 border-green-500 focus:border-green-500",
-              (!valid) && "text-red-700 border-red-500 focus:border-red-500",
-              (!validate) && "text-gray-900 border-gray-700 focus:border-gray-700",
+              "text-gray-900 border-gray-700 focus:border-gray-900",
               (disabled) && "text-gray-400 border-gray-400 cursor-not-allowed",
             ) }
             disabled={ disabled }
@@ -117,10 +131,8 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
           <label
             htmlFor={ data.current.id }
             className={ cn(
-              "absolute top-3 -translate-y-6 origin-[0] scale-75 text-sm",
-              (valid) && "text-green-500 peer-focus:text-green-700",
-              (!valid) && "text-red-500 peer-focus:text-red-700",
-              (!validate) && "text-gray-700 peer-focus:text-gray-900",
+              "absolute top-3 -translate-y-6 origin-[0] scale-75 text-sm text-left normal-case",
+              "text-gray-700 peer-focus:text-gray-900",
               (disabled) && "text-gray-400",
             ) }
             suppressHydrationWarning
@@ -129,7 +141,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
           </label>
         </div>
       </div>
-      <div id={ `${ data.current.id }-dropdown` } className="z-20 hidden w-96 bg-white border divide-y divide-gray-100 rounded-lg shadow-sm" suppressHydrationWarning>
+      <div id={ `${ data.current.id }-dropdown` } className="z-20 hidden min-w-48 bg-white border divide-y divide-gray-100 rounded-lg shadow-sm" suppressHydrationWarning>
         <ul className="px-3 py-2 text-sm text-gray-700">
           {
             options.map((option: string, index: number) => {
@@ -139,6 +151,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
                     {
                       (type === "checkbox") &&
                       <Checkbox
+                        ref={ refs.current.forms[index] }
                         className="m-0"
                         title={ String(index) }
                         label={ option }
@@ -150,6 +163,7 @@ export default React.memo(React.forwardRef<HTMLButtonElement, DropdownCheckbox2P
                     {
                       (type === "toggle") &&
                       <ToggleButton
+                        ref={ refs.current.forms[index] }
                         className="m-0"
                         title={ String(index) }
                         color={ color }

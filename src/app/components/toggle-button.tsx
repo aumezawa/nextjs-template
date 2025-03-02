@@ -1,25 +1,28 @@
-import React, { useCallback, useRef } from "react"
+import React, { useCallback, useImperativeHandle, useRef } from "react"
 import { v4 as uuid } from "uuid"
 import { cn } from "@/app/libs/utils"
+import type { FormElement } from "@/app/types/form"
 
 
-type CheckboxProps = {
+type ToggleButtonProps = {
   id?: string,
   className?: string,
   title?: string,
+  subtitle?: string,
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
   color?: "blue" | "green",
   label?: string,
   disabled?: boolean,
   defaultChecked?: boolean,
   fixed?: boolean,
-  onChange?: (value: boolean, title: string) => void,
+  onChange?: (value: boolean, title: string, subtitle: string) => void,
 }
 
-export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox({
-  id = "",
+export default React.memo(React.forwardRef<FormElement, ToggleButtonProps>(function ToggleButton({
+  id = undefined,
   className = "",
   title = "",
+  subtitle = "",
   size = "auto",
   color = "blue",
   label = "undefined",
@@ -28,31 +31,58 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
   fixed = false,
   onChange = undefined,
 }, ref) {
+  const refs = useRef({
+    input: React.createRef<HTMLInputElement>(),
+  })
+
   const data = useRef({
     id: id || uuid(),
   })
 
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      if (refs.current.input.current) {
+        refs.current.input.current.checked = false
+      }
+    },
+    set: () => {
+      if (refs.current.input.current) {
+        refs.current.input.current.checked = true
+      }
+    },
+    get: () => {
+      const value = refs.current.input.current?.checked
+      if (value === undefined) {
+        return undefined
+      }
+      if (value) {
+        return "true"
+      } else {
+        return "false"
+      }
+    },
+  }))
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (onChange) {
-      onChange(e.currentTarget.checked, title)
+      onChange(e.currentTarget.checked, title, subtitle)
     }
-  }, [title, onChange])
+  }, [title, subtitle, onChange])
 
   return (
     <div className={ cn(
       "flex my-2",
-      (size !== "auto") && "w-full",
-      (size === "xs") && "max-w-xs mx-auto",
-      (size === "sm") && "max-w-sm mx-auto",
-      (size === "md") && "max-w-md mx-auto",
-      (size === "lg") && "max-w-lg mx-auto",
-      (size === "xl") && "max-w-xl mx-auto",
+      (size === "xs") && "w-full max-w-xs mx-auto",
+      (size === "sm") && "w-full max-w-sm mx-auto",
+      (size === "md") && "w-full max-w-md mx-auto",
+      (size === "lg") && "w-full max-w-lg mx-auto",
+      (size === "xl") && "w-full max-w-xl mx-auto",
+      (size === "full") && "w-full",
       className,
     ) }>
-      <label className="inline-flex items-center gap-2 cursor-pointer">
+      <label className="inline-flex items-center gap-2">
         <input
-          key={ `${ data.current.id }-key-${ String(defaultChecked) }` }
-          ref={ ref }
+          ref={ refs.current.input }
           id={ data.current.id }
           type="checkbox"
           className="sr-only peer"
@@ -63,7 +93,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
         />
         <div
           className={ cn(
-            "relative w-9 h-5 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all",
+            "relative w-9 h-5 bg-gray-200 rounded-full cursor-pointer peer peer-focus:ring-4 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all",
             (color === "blue") && "peer-focus:ring-blue-300 peer-checked:bg-blue-600",
             (color === "blue") && (disabled) && "peer-checked:bg-blue-400",
             (color === "green") && "peer-focus:ring-green-300 peer-checked:bg-green-500",
@@ -77,7 +107,7 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
           (label) &&
           <span
             className={ cn(
-              "text-sm font-medium text-gray-900 ",
+              "text-sm font-medium text-gray-900 cursor-pointer",
               (disabled) && "text-gray-400 cursor-not-allowed",
               (fixed) && "text-gray-900 cursor-default",
             ) }
@@ -86,7 +116,6 @@ export default React.memo(React.forwardRef<HTMLInputElement, CheckboxProps>(func
           </span>
         }
       </label>
-
     </div>
   )
 }))
