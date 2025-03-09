@@ -16,8 +16,8 @@ export default React.memo<MessageBoxProps>(function MessageBox({
   return (
     <div className={ cn(
       "w-full",
-      className,
       "m-0 p-2",
+      className,
     ) }>
       <div className={ cn(
         "px-4 py-3 font-medium border border-gray-200 rounded-lg",

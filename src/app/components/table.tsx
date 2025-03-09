@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useImperativeHandle, useRef, useState } from "react"
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react"
 import { cn } from "@/app/libs/utils"
 import type { FormElement } from "@/app/types/form"
 
@@ -22,6 +22,8 @@ type TableProps = {
   data?: TableFormat,
   filter?: { [label: string]: "text" | "dec" | "JPY" | "USD" | "date" | "select" }
   label?: string,
+  fixed?: boolean,
+  maxColSize?: number,
   sticky?: 0 | 1,
   commandable?: boolean,
   linkable?: boolean,
@@ -34,7 +36,7 @@ type TableProps = {
   replaceLabel?: (label: string) => string,
   /* eslint-disable-next-line */
   replaceValue?: (value: any, label: string, content: TableContent, row: number) => string | number | boolean | React.JSX.Element,
-  onChecked?: (value: Array<string>) => void,
+  onRendered?: (value: string) => void,
   onCommand?: (content: TableContent, row: number) => void,
 }
 
@@ -42,8 +44,10 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
   className = "",
   data = { title: "untitled", labels: ["unlabeled"], contents: [{ unlabeled: "no data" }] },
   filter = {},
-  sticky = 0,
   label = "",
+  fixed = false,
+  maxColSize = undefined,
+  sticky = 0,
   commandable = false,
   linkable = false,
   linkIcon = false,
@@ -54,12 +58,18 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
   filterRow = () => true,
   replaceLabel = (label: string) => (label),
   replaceValue = (value: string | number | boolean) => (value),
+  onRendered = undefined,
   onCommand = undefined,
 }, ref){
   const [reload, setReload] = useState(false)
 
   const refs = useRef({
+    table: React.createRef<HTMLTableElement>(),
     forms: [] as Array<React.RefObject<FormElement | null>>,
+  })
+
+  const meta = useRef({
+    rows: [] as Array<number>,
   })
 
   const filters = useRef<Array<Filter>>([])
@@ -81,7 +91,7 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
           filters.current.push({
             id: index,
             label: data.labels[index],
-            type: filter[data.labels[index]] as "text" | "dec" | "JPY" | "USD" | "date",
+            type: filter[data.labels[index]] as "text" | "dec" | "JPY" | "USD" | "date" | "select",
             from: from,
             to: to,
           })
@@ -115,7 +125,7 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
           filters.current.push({
             id: index,
             label: data.labels[index],
-            type: filter[data.labels[index]] as "text" | "dec" | "JPY" | "USD" | "date",
+            type: filter[data.labels[index]] as "text" | "dec" | "JPY" | "USD" | "date" | "select",
             from: value,
             to: to || "",
           })
@@ -223,15 +233,49 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
     return null
   }, [data])
 
+  useEffect(() => {
+    if (fixed) {
+      if (refs.current.table.current) {
+        refs.current.table.current.style.tableLayout = "auto"
+        data.labels.forEach((_: string, index: number) => {
+          const element = document.getElementById(`${ data.title }_col_${ index }`)
+          if (element) {
+            let width = element.offsetWidth || 200
+            if (maxColSize !== undefined) {
+              if (width > maxColSize) {
+                width = maxColSize
+              }
+            }
+            element.style.width = String(width) + "px"
+          }
+        })
+        if (commandable){
+          const element = document.getElementById(`${ data.title }_col_command`)
+          if (element) {
+            const width = element.offsetWidth || 50
+            element.style.width = String(width) + "px"
+          }
+        }
+        refs.current.table.current.style.tableLayout = "fixed"
+      }
+    }
+  }, [data, fixed, maxColSize, commandable, filterCol])
+
+  useEffect(() => {
+    if (onRendered) {
+      onRendered(meta.current.rows.join("_"))
+    }
+  })
+
   return (
     <div className={ cn(
       "w-full h-full overflow-x-auto overflow-y-auto",
       className,
     ) }
     >
-      <table className="w-full min-h-32 text-sm text-left text-nowrap text-gray-600">
+      <table ref={ refs.current.table } className="w-full min-h-32 text-sm text-left text-nowrap text-gray-900">
         <thead className={ cn(
-          "sticky top-0 z-10 text-xs uppercase text-gray-800 bg-gray-100",
+          "sticky top-0 z-10 text-xs text-white bg-gray-800",
           (alignLabel === "left") && "text-left",
           (alignLabel === "center") && "text-center",
           (alignLabel === "right") && "text-right",
@@ -243,7 +287,7 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
               .filter((label: string) => (filterCol(label)))
               .slice(0, sticky)
               .map((label: string, index: number) => (
-                <th key={ index } scope="col" className="sticky left-0 z-0 px-6 py-3 bg-gray-100">
+                <th key={ index } id={ `${ data.title }_col_0` } scope="col" className="sticky left-0 z-0 px-4 py-3 bg-gray-800">
                   { replaceLabel(label) }
                 </th>
               ))
@@ -254,46 +298,55 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
               // filter cols
               .filter((label: string) => (filterCol(label)))
               .slice(sticky)
-              .map((label: string, index: number) => (
-                <th key={ index + sticky } scope="col" className="px-6 py-3">
-                  <div className="inline-flex items-center">
-                    { initializeRefs() }
-                    { replaceLabel(label) }
-                    {
-                      (filter[label] === "text" || filter[label] === "dec" || filter[label] === "JPY" || filter[label] === "USD" || filter[label] === "date") &&
-                      <DropdownFromIcon
-                        ref={ refs.current.forms[index + sticky] }
-                        className="ms-2"
-                        title={ String(index + sticky) }
-                        type={ filter[label] }
-                        applying={ !!filters.current.find((filter: Filter) => (filter.id === index + sticky)) }
-                        onChange={ handleChangeFilter }
-                      />
-                    }
-                    {
-                      (filter[label] === "select") &&
-                      <DropdownSelectIcon
-                        ref={ refs.current.forms[index + sticky] }
-                        className="ms-2"
-                        title={ String(index + sticky) }
-                        options={ [...new Set(data.contents.filter((content: TableContent) => (typeof content[label] === "string")).map((content: TableContent) => (content[label])))] }
-                        applying={ !!filters.current.find((filter: Filter) => (filter.id === index + sticky)) }
-                        onChange={ handleChangeSelectFilter }
-                      />
-                    }
-                  </div>
-                </th>
-              ))
+              .map((label: string) => {
+                const index = data.labels.indexOf(label)
+                return (
+                  <th key={ index } id={ `${ data.title }_col_${ index }` } scope="col" className="px-4 py-3">
+                    <div className="inline-flex items-center">
+                      { initializeRefs() }
+                      { replaceLabel(label) }
+                      {
+                        (filter[label] === "text" || filter[label] === "dec" || filter[label] === "JPY" || filter[label] === "USD" || filter[label] === "date") &&
+                        <DropdownFromIcon
+                          ref={ refs.current.forms[index] }
+                          className="ms-2"
+                          title={ String(index) }
+                          color="white"
+                          type={ filter[label] }
+                          applying={ !!filters.current.find((filter: Filter) => (filter.id === index)) }
+                          onChange={ handleChangeFilter }
+                        />
+                      }
+                      {
+                        (filter[label] === "select") &&
+                        <DropdownSelectIcon
+                          ref={ refs.current.forms[index] }
+                          className="ms-2"
+                          title={ String(index) }
+                          color="white"
+                          options={ [...new Set(data.contents.filter((content: TableContent) => (typeof content[label] === "string")).map((content: TableContent) => (content[label])))] }
+                          applying={ !!filters.current.find((filter: Filter) => (filter.id === index)) }
+                          onChange={ handleChangeSelectFilter }
+                        />
+                      }
+                    </div>
+                  </th>
+                )
+              })
             }
             {
               commandable &&
-              <th scope="col" className="sticky right-0 z-0 px-6 py-3 bg-gray-100">
+              <th scope="col" id={ `${ data.title }_col_command` } className="sticky right-0 z-0 px-4 py-3 bg-gray-800">
               </th>
             }
           </tr>
         </thead>
         {
           data.contents.map((content: TableContent, row: number) => {
+            if (row === 0) {
+              meta.current.rows = []
+            }
+
             // filter rows
             if (!applyFilterRow(content) || !filterRow(content, row)) {
               return (
@@ -305,12 +358,14 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
             // highlight
             const highlight = highlightRow(content, row)
 
+            meta.current.rows.push(row)
+
             return (
               <tbody key={ row }>
                 <tr
                   className={ cn(
-                    "text-nowrap border-b",
-                    (highlight === "none") && "bg-white hover:bg-gray-100",
+                    "text-nowrap border-b border-gray-800",
+                    (highlight === "none") && "bg-white hover:bg-gray-200",
                     (highlight === "info") && "bg-green-100 hover:bg-green-200",
                     (highlight === "warning") && "bg-yellow-100 hover:bg-yellow-200",
                     (highlight === "error") && "bg-red-100 hover:bg-red-200",
@@ -325,7 +380,7 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
                     .filter((label: string) => (filterCol(label)))
                     .slice(0, sticky)
                     .map((label: string, col: number) => (
-                      <td key={ col } scope="col" className="sticky left-0 z-0 px-6 py-3 bg-gray-100">
+                      <td key={ col } scope="col" className="sticky left-0 z-0 px-4 py-3 text-white bg-gray-800">
                         { content[label] }
                       </td>
                     ))
@@ -337,7 +392,7 @@ export default React.memo(React.forwardRef<FormElement, TableProps>(function Tab
                     .filter((label: string) => (filterCol(label)))
                     .slice(sticky)
                     .map((label: string, col: number) => (
-                      <td key={ col + sticky } scope="col" className="px-6 py-3">
+                      <td key={ col + sticky } scope="col" className="px-4 py-3">
                         {
                           (() => {
                             // replace value

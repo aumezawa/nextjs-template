@@ -10,7 +10,7 @@ type DateFormProps = {
   className?: string,
   title?: string,
   subtitle?: string,
-  type?: "date" | "time" | "datetime-local",
+  type?: "date" | "month" | "time" | "datetime-local",
   size?: "auto" | "xs" | "sm" | "md" | "lg" | "xl" | "full",
   label?: string,
   disabled?: boolean,
@@ -37,6 +37,7 @@ export default React.memo(React.forwardRef<FormElement, DateFormProps>(function 
   const validateValue = useCallback((value: string) => {
     const patterns = {
       "date": /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/,
+      "month": /^[0-9]{4}-[0-9]{2}$/,
       "time": /^[0-9]{2}:[0-9]{2}$/,
       "datetime-local": /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$/,
     }
@@ -52,6 +53,7 @@ export default React.memo(React.forwardRef<FormElement, DateFormProps>(function 
   const setValue = useCallback((value: string) => {
     const patterns = {
       "date": /^([0-9]{4}-[0-9]{2}-[0-9]{2}){0,1}$/,
+      "month": /^([0-9]{4}-[0-9]{2}){0,1}$/,
       "time": /^([0-9]{2}:[0-9]{2}){0,1}$/,
       "datetime-local": /^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}){0,1}$/,
     }
@@ -96,6 +98,7 @@ export default React.memo(React.forwardRef<FormElement, DateFormProps>(function 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const patterns = {
       "date": /^([0-9]{4}-[0-9]{2}-[0-9]{2}){0,1}$/,
+      "month": /^([0-9]{4}-[0-9]{2}){0,1}$/,
       "time": /^([0-9]{2}:[0-9]{2}){0,1}$/,
       "datetime-local": /^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}){0,1}$/,
     }

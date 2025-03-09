@@ -41,7 +41,7 @@ export default React.memo<TabFrameProps>(function TabFrame({
                     id={ `${ id }-tab-${ index }` }
                     type="button"
                     role="tab"
-                    className="inline-block px-4 py-2 text-sm font-medium text-center border-b-2 rounded-t-lg cursor-auto hover:text-gray-600 hover:border-gray-300 aria-selected:text-blue-600 aria-selected:border-blue-600"
+                    className="inline-block px-4 py-2 text-sm font-medium text-center border-b-2 rounded-t-lg cursor-pointer hover:text-gray-600 hover:border-gray-300 aria-selected:text-blue-600 aria-selected:border-blue-600"
                     data-tabs-target={ `#${ id }-content-${ index }` }
                     aria-controls={ `${ id }-content-${ index }` }
                     aria-selected="false"
